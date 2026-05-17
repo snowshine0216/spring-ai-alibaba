@@ -352,26 +352,24 @@ class WorkflowServiceImplTest {
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Documents a known production bug in {@link WorkflowServiceImpl#call}:
-	 * when {@code streamCall} emits an error-response (from {@code handleThrowable}),
-	 * the response has {@code status = null}. The {@code call()} method then
-	 * unconditionally calls {@code response.getStatus().equals(...)} on line 106
-	 * which throws {@link NullPointerException}.
-	 *
-	 * <p>This test pins the buggy behaviour so any fix is visible.
-	 * // TODO P0-15: Fix call() to guard against null status before equality check.
+	 * When {@code streamCall} emits an error-response (from {@code handleThrowable}),
+	 * the response has {@code status = null}. The synchronous {@code call()} wrapper
+	 * must surface that error response to the caller rather than NPE on the
+	 * {@code getStatus().equals(...)} filter — guarded by the null-check on line 106.
 	 */
 	@Test
-	void call_withInvalidRequest_throwsNpeFromProductionBug() {
+	void call_withInvalidRequest_returnsErrorResponse() {
 		// Arrange — request with missing appId triggers BizException → error WorkflowResponse
 		// with status=null (handleThrowable does not set status).
 		WorkflowRequest request = new WorkflowRequest();
 		// appId intentionally left null
 
-		// Act & Assert — production call() does getStatus().equals() without null guard,
-		// causing NPE when the error-response has status=null.
-		org.junit.jupiter.api.Assertions.assertThrows(NullPointerException.class,
-				() -> workflowServiceImpl.call(request));
+		// Act — call() collects the stream and must not throw on the null-status error response.
+		WorkflowResponse response = workflowServiceImpl.call(request);
+
+		// Assert — the error from streamCall surfaces on the returned response.
+		assertThat(response).isNotNull();
+		assertThat(response.getError()).isNotNull();
 	}
 
 }
