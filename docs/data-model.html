@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba Admin — Data Model (ER)</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1500px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15,23,42,0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1300px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .card { background: rgba(15,23,42,0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card-dot.orange { background: #fb923c; }
+    .card-dot.slate { background: #94a3b8; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+    .toolbar { display: flex; gap: 0.5rem; margin-left: auto; flex-shrink: 0; align-items: center; }
+    .toolbar-toggle { background: transparent; border: none; color: #475569; cursor: pointer; font-size: 1.25rem; line-height: 1; padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: color 0.2s, background 0.2s; }
+    .toolbar-toggle:hover { color: #94a3b8; background: rgba(30,41,59,0.5); }
+    .toolbar-actions { display: none; gap: 0.5rem; }
+    .toolbar.expanded .toolbar-actions { display: flex; }
+    .toolbar-actions button { background: rgba(30,41,59,0.8); border: 1px solid #334155; color: #94a3b8; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-family: inherit; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .toolbar-actions button:hover { background: rgba(51,65,85,0.8); color: white; border-color: #475569; }
+    @media print { body { background: #020617; padding: 1rem; } .toolbar { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba Admin — Data Model (ER)</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">22 core tables · 2 MySQL schemas (agentscope · admin) · solid violet = declared SQL FK · dashed slate = logical FK</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1320" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+          <marker id="fk-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+            <polygon points="0 0, 10 4, 0 8" fill="#a78bfa"/>
+          </marker>
+          <marker id="logical-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+            <polygon points="0 0, 10 4, 0 8" fill="#94a3b8"/>
+          </marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#020617"/>
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+
+        <text x="700" y="38" fill="#e2e8f0" font-size="20" font-weight="700" text-anchor="middle">Spring AI Alibaba Admin — Data Model (ER)</text>
+        <text x="700" y="60" fill="#94a3b8" font-size="11" text-anchor="middle">22 core tables · grouped by MySQL schema · solid = declared SQL FK · dashed = logical FK · all relationships shown as 1:N (parent → child)</text>
+
+        <rect x="20" y="90" width="750" height="895" rx="12" fill="rgba(15,23,42,0.55)" stroke="#475569" stroke-width="1.4" stroke-dasharray="8,5"/>
+        <text x="40" y="116" fill="#cbd5e1" font-size="13" font-weight="700">schema: agentscope</text>
+        <text x="190" y="116" fill="#94a3b8" font-size="10">Agent / Builder Platform · agentscope-schema.sql</text>
+
+        <rect x="820" y="90" width="525" height="895" rx="12" fill="rgba(15,23,42,0.55)" stroke="#475569" stroke-width="1.4" stroke-dasharray="8,5"/>
+        <text x="840" y="116" fill="#cbd5e1" font-size="13" font-weight="700">schema: admin</text>
+        <text x="958" y="116" fill="#94a3b8" font-size="10">Evaluation &amp; Prompt Management · admin-schema.sql</text>
+
+        <g stroke="#a78bfa" stroke-width="1.8" fill="none">
+          <path d="M 1070 380 L 1095 380" marker-end="url(#fk-arrow)"/>
+          <path d="M 960 450 L 960 480" marker-end="url(#fk-arrow)"/>
+          <path d="M 1070 720 L 1095 720" marker-end="url(#fk-arrow)"/>
+        </g>
+
+        <g stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5,4" fill="none">
+          <path d="M 250 210 L 275 210" marker-end="url(#logical-arrow)"/>
+          <path d="M 385 280 L 385 295 L 140 295 L 140 310" marker-end="url(#logical-arrow)"/>
+          <path d="M 385 280 L 385 295 L 630 295 L 630 310" marker-end="url(#logical-arrow)"/>
+          <path d="M 250 380 L 275 380" marker-end="url(#logical-arrow)"/>
+          <path d="M 250 410 L 263 410 L 263 460 L 597 460 L 597 410 L 610 410" marker-end="url(#logical-arrow)"/>
+          <path d="M 495 550 L 520 550" marker-end="url(#logical-arrow)"/>
+          <path d="M 495 720 L 520 720" marker-end="url(#logical-arrow)"/>
+          <path d="M 250 890 L 275 890" marker-end="url(#logical-arrow)"/>
+          <path d="M 1070 210 L 1095 210" marker-end="url(#logical-arrow)"/>
+          <path d="M 1095 380 L 1082 380 L 1082 800 L 960 800 L 960 820" marker-end="url(#logical-arrow)"/>
+          <path d="M 1070 890 L 1095 890" marker-end="url(#logical-arrow)"/>
+          <path d="M 1205 790 L 1205 820" marker-end="url(#logical-arrow)"/>
+        </g>
+
+        <g font-size="9" font-weight="700">
+          <rect x="251" y="190" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="262" y="200" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="252" y="280" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="263" y="290" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="496" y="280" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="507" y="290" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="251" y="361" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="262" y="371" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="419" y="447" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="430" y="457" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="496" y="531" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="507" y="541" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="496" y="701" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="507" y="711" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="251" y="871" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="262" y="881" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="1071" y="191" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="1082" y="201" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="1071" y="361" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="1082" y="371" fill="#ede9fe" text-anchor="middle">1:N</text>
+          <rect x="964" y="455" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="975" y="465" fill="#ede9fe" text-anchor="middle">1:N</text>
+          <rect x="1071" y="701" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="1082" y="711" fill="#ede9fe" text-anchor="middle">1:N</text>
+          <rect x="1063" y="593" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="1074" y="603" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="1071" y="871" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="1082" y="881" fill="#cbd5e1" text-anchor="middle">1:N</text>
+          <rect x="1185" y="798" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+          <text x="1196" y="808" fill="#cbd5e1" text-anchor="middle">1:N</text>
+        </g>
+
+        <g transform="translate(30,140)">
+          <rect width="220" height="140" rx="6" fill="#0b1023" stroke="#a78bfa" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(76, 29, 149, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(76, 29, 149, 0.85)"/>
+          <text x="110" y="18" fill="#ede9fe" font-size="12" font-weight="700" text-anchor="middle">account</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">account_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">username</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">basic|admin</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(275,140)">
+          <rect width="220" height="140" rx="6" fill="#0b1023" stroke="#a78bfa" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(76, 29, 149, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(76, 29, 149, 0.85)"/>
+          <text x="110" y="18" fill="#ede9fe" font-size="12" font-weight="700" text-anchor="middle">workspace</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">workspace_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">account_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">name</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(30,310)">
+          <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">application</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">app_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">agent|workflow</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0..3</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(275,310)">
+          <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">application_version</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">app_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0..3</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(520,310)">
+          <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">application_component</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="64" fill="#e2e8f0">code</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">app_id?</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">agent|workflow</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1|2</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(30,480)">
+          <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+          <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">agent_schema</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">agent_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">React/Para/Seq/…</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">DRAFT|PUB|ARCH</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(275,480)">
+          <rect width="220" height="140" rx="6" fill="#06202b" stroke="#22d3ee" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(8, 51, 68, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(8, 51, 68, 0.85)"/>
+          <text x="110" y="18" fill="#cffafe" font-size="12" font-weight="700" text-anchor="middle">plugin</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">plugin_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">1|2</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(520,480)">
+          <rect width="220" height="140" rx="6" fill="#06202b" stroke="#22d3ee" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(8, 51, 68, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(8, 51, 68, 0.85)"/>
+          <text x="110" y="18" fill="#cffafe" font-size="12" font-weight="700" text-anchor="middle">tool</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">tool_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">plugin_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">api_schema</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">test_status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">1|2|3</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(275,650)">
+          <rect width="220" height="140" rx="6" fill="#2a1c08" stroke="#fbbf24" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(120, 53, 15, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(120, 53, 15, 0.85)"/>
+          <text x="110" y="18" fill="#fef3c7" font-size="12" font-weight="700" text-anchor="middle">knowledge_base</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">kb_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">total_docs</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(520,650)">
+          <rect width="220" height="140" rx="6" fill="#2a1c08" stroke="#fbbf24" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(120, 53, 15, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(120, 53, 15, 0.85)"/>
+          <text x="110" y="18" fill="#fef3c7" font-size="12" font-weight="700" text-anchor="middle">document</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">doc_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">kb_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">file|url</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">index_status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">1|2|3</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(30,820)">
+          <rect width="220" height="140" rx="6" fill="#2a0d1a" stroke="#fb7185" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(136, 19, 55, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(136, 19, 55, 0.85)"/>
+          <text x="110" y="18" fill="#ffe4e6" font-size="12" font-weight="700" text-anchor="middle">provider</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws?</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="64" fill="#e2e8f0">provider</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">protocol</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">source</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">preset|custom</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(275,820)">
+          <rect width="220" height="140" rx="6" fill="#2a0d1a" stroke="#fb7185" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(136, 19, 55, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(136, 19, 55, 0.85)"/>
+          <text x="110" y="18" fill="#ffe4e6" font-size="12" font-weight="700" text-anchor="middle">model</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws?</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="64" fill="#e2e8f0">model_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(100)</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">provider</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(100)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LLM|embed|rerank</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">tags</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(520,820)">
+          <rect width="220" height="140" rx="6" fill="#2a0d1a" stroke="#fb7185" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(136, 19, 55, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(136, 19, 55, 0.85)"/>
+          <text x="110" y="18" fill="#ffe4e6" font-size="12" font-weight="700" text-anchor="middle">mcp_server</text>
+          <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+          <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws?</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="64" fill="#e2e8f0">server_code</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">account_id?</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">OFFICIAL|CUST</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">install_type</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">npx|uvx|sse</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(850,140)">
+          <rect width="220" height="140" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(30, 41, 59, 0.95)"/>
+          <rect y="20" width="220" height="6" fill="rgba(30, 41, 59, 0.95)"/>
+          <text x="110" y="18" fill="#e2e8f0" font-size="12" font-weight="700" text-anchor="middle">prompt</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">prompt_key</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">prompt_desc</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">latest_version</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">tags</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(1095,140)">
+          <rect width="220" height="140" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(30, 41, 59, 0.95)"/>
+          <rect y="20" width="220" height="6" fill="rgba(30, 41, 59, 0.95)"/>
+          <text x="110" y="18" fill="#e2e8f0" font-size="12" font-weight="700" text-anchor="middle">prompt_version</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">prompt_key</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">template</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">pre|release</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(850,310)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">dataset</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="64" fill="#e2e8f0">name</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">description</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">TEXT</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">columns_config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">deleted</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(1095,310)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">dataset_version</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">dataset_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">data_count</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">INT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">DRAFT|PUB|ARCH</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(850,480)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">dataset_item</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">dataset_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">data_content</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">columns_config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">deleted</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(850,650)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">evaluator</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="64" fill="#e2e8f0">name</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">description</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">TEXT</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">deleted</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(1095,650)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">evaluator_version</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">evaluator_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">model_config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">TEXT</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">DRAFT|PUB|ARCH</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(850,820)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">experiment</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">dataset_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">dataset_version_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">status</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">DRAFT/RUN/…</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">progress</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0..100</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(1095,820)">
+          <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+          <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+          <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">experiment_result</text>
+          <g font-size="10">
+            <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">experiment_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">evaluator_version_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+            <text><tspan x="40" y="100" fill="#e2e8f0">score</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">DECIMAL(3,2)</tspan></text>
+            <text><tspan x="40" y="118" fill="#e2e8f0">actual_output</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+          </g>
+        </g>
+
+        <g transform="translate(20, 1010)">
+          <rect width="1325" height="290" rx="8" fill="#0b1023" stroke="#334155" stroke-width="1"/>
+          <text x="20" y="26" fill="#e2e8f0" font-size="13" font-weight="700">Legend</text>
+
+          <g transform="translate(20, 46)" font-size="10">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1.2"/>
+            <text x="22" y="11" fill="#e2e8f0">Tenancy &amp; Identity</text>
+            <rect x="180" y="0" width="14" height="14" rx="3" fill="rgba(6, 78, 59, 0.6)" stroke="#34d399" stroke-width="1.2"/>
+            <text x="202" y="11" fill="#e2e8f0">Apps &amp; Agents</text>
+            <rect x="360" y="0" width="14" height="14" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1.2"/>
+            <text x="382" y="11" fill="#e2e8f0">Plugins &amp; Tools</text>
+            <rect x="540" y="0" width="14" height="14" rx="3" fill="rgba(120, 53, 15, 0.6)" stroke="#fbbf24" stroke-width="1.2"/>
+            <text x="562" y="11" fill="#e2e8f0">Knowledge</text>
+            <rect x="700" y="0" width="14" height="14" rx="3" fill="rgba(136, 19, 55, 0.6)" stroke="#fb7185" stroke-width="1.2"/>
+            <text x="722" y="11" fill="#e2e8f0">Models &amp; MCP</text>
+            <rect x="880" y="0" width="14" height="14" rx="3" fill="rgba(154, 52, 18, 0.6)" stroke="#fb923c" stroke-width="1.2"/>
+            <text x="902" y="11" fill="#e2e8f0">Evaluation</text>
+            <rect x="1020" y="0" width="14" height="14" rx="3" fill="rgba(30, 41, 59, 1)" stroke="#94a3b8" stroke-width="1.2"/>
+            <text x="1042" y="11" fill="#e2e8f0">Prompts</text>
+          </g>
+
+          <g transform="translate(20, 80)" font-size="10">
+            <rect x="0" y="0" width="40" height="14" rx="3" fill="rgba(15,23,42,0.55)" stroke="#475569" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <text x="50" y="11" fill="#e2e8f0">Dashed container groups tables by MySQL schema (agentscope / admin)</text>
+          </g>
+
+          <g transform="translate(20, 110)" font-size="10">
+            <text x="0" y="11" fill="#fde68a" font-weight="700">PK</text>
+            <text x="26" y="11" fill="#e2e8f0">Primary key</text>
+            <text x="140" y="11" fill="#94a3b8" font-weight="700">UQ</text>
+            <text x="166" y="11" fill="#e2e8f0">Unique column</text>
+            <text x="290" y="11" fill="#a78bfa" font-weight="700">FK</text>
+            <text x="316" y="11" fill="#e2e8f0">Foreign-key column (declared or logical)</text>
+            <g transform="translate(620, 0)">
+              <rect x="0" y="-1" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+              <text x="14" y="9" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+              <text x="36" y="11" fill="#e2e8f0">Carries workspace_id (logical FK to workspace; arrow omitted to keep the diagram clean — see ws? for optional)</text>
+            </g>
+          </g>
+
+          <g transform="translate(20, 148)" font-size="10">
+            <line x1="0" y1="6" x2="60" y2="6" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#fk-arrow)"/>
+            <rect x="22" y="-7" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+            <text x="33" y="3" fill="#ede9fe" font-size="9" font-weight="700" text-anchor="middle">1:N</text>
+            <text x="80" y="10" fill="#e2e8f0">Declared SQL FK (ON DELETE CASCADE) · one parent ↔ many children</text>
+            <line x1="640" y1="6" x2="700" y2="6" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5,4" marker-end="url(#logical-arrow)"/>
+            <rect x="662" y="-7" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+            <text x="673" y="3" fill="#cbd5e1" font-size="9" font-weight="700" text-anchor="middle">1:N</text>
+            <text x="720" y="10" fill="#e2e8f0">Logical FK by business id (joined in code, not enforced by DB)</text>
+          </g>
+
+          <g transform="translate(20, 188)" font-size="9" fill="#94a3b8">
+            <text y="0">Direction convention: arrows point from parent (the "1" side) toward child (the "N" side). The arrowhead lands on the FK-holding table.</text>
+            <text y="14">Hub scoping: 11 agentscope tables carry workspace_id but only the application/application_component links are drawn explicitly; all others are marked with the "ws" badge to avoid arrow clutter.</text>
+            <text y="28">Supporting tables omitted from this diagram (described in data-model.md): api_key, reference, prompt_build_template, evaluator_template, model_config; plus the in-code LimitEntity value object.</text>
+            <text y="42">experiment also denormalizes dataset_id (cached alongside dataset_version_id) — the authoritative join is dataset_version → experiment shown here.</text>
+          </g>
+
+          <g transform="translate(20, 246)" font-size="10">
+            <text x="0" y="11" fill="#cbd5e1" font-weight="700">schema: agentscope</text>
+            <text x="160" y="11" fill="#94a3b8">13 core tables · account, workspace, application[+version/+component], agent_schema, plugin/tool, knowledge_base/document, provider/model, mcp_server</text>
+            <text x="0" y="28" fill="#cbd5e1" font-weight="700">schema: admin</text>
+            <text x="160" y="28" fill="#94a3b8">9 core tables · prompt[+version], dataset[+version/+item], evaluator[+version], experiment[+result]</text>
+          </g>
+        </g>
+
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>schema: agentscope (13 core tables)</h3>
+        </div>
+        <ul>
+          <li>• Tenancy &amp; Identity — <code>account</code>, <code>workspace</code></li>
+          <li>• Apps &amp; Agents — <code>application</code>, <code>application_version</code>, <code>application_component</code>, <code>agent_schema</code></li>
+          <li>• Plugins &amp; Tools — <code>plugin</code>, <code>tool</code></li>
+          <li>• Knowledge — <code>knowledge_base</code>, <code>document</code></li>
+          <li>• Models &amp; MCP — <code>provider</code>, <code>model</code>, <code>mcp_server</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot orange"></div>
+          <h3>schema: admin (9 core tables)</h3>
+        </div>
+        <ul>
+          <li>• Prompts — <code>prompt</code>, <code>prompt_version</code></li>
+          <li>• Evaluation: datasets — <code>dataset</code>, <code>dataset_version</code> 🔗 (SQL FK), <code>dataset_item</code> 🔗 (SQL FK)</li>
+          <li>• Evaluation: evaluators — <code>evaluator</code>, <code>evaluator_version</code> 🔗 (SQL FK)</li>
+          <li>• Evaluation: experiments — <code>experiment</code>, <code>experiment_result</code></li>
+          <li>• Only the <code>dataset_*</code> and <code>evaluator_version</code> tables use declared SQL FKs</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot slate"></div>
+          <h3>Supporting models (excluded from ER)</h3>
+        </div>
+        <ul>
+          <li>• <code>api_key</code> — API access tokens (auth)</li>
+          <li>• <code>reference</code> — generic key/value reference table</li>
+          <li>• <code>prompt_build_template</code> — prompt scaffold templates</li>
+          <li>• <code>evaluator_template</code> — reusable evaluator presets</li>
+          <li>• <code>model_config</code> — provider-level model configuration</li>
+          <li>• <code>LimitEntity</code> — in-code value object (no table)</li>
+          <li>• Full descriptions in <code>data-model.md</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Non-MySQL data</h3>
+        </div>
+        <ul>
+          <li>• <code>DocumentChunk</code> — vector store (Elasticsearch by default)</li>
+          <li>• <code>ChatSession</code> — in-process <code>ConcurrentHashMap</code>, 30-min idle expiry</li>
+          <li>• graph-studio <code>App</code> — in-memory app generator state</li>
+          <li>• graph-core checkpoints — opaque JSON keyed by <code>thread_id</code> / <code>checkpoint_id</code> (PG / MySQL / Oracle / Mongo / Redis / File)</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Spring AI Alibaba Admin · Data model · Generated 2026-05-16 · Source: spring-ai-alibaba-admin/docker/middleware/init/mysql/{admin-schema,agentscope-schema}.sql</p>
+  </div>
+
+  <script>
+    async function copyAsImage(btn) {
+      const orig = btn.textContent;
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ Copied!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+    async function downloadPNG(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const link = document.createElement('a');
+        link.download = 'data-model.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '✓ Done!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+    async function downloadPDF(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('data-model.pdf');
+        btn.textContent = '✓ Done!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+  </script>
+</body>
+</html>

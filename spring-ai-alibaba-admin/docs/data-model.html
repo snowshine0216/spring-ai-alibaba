@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba Database Atlas</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1700px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1640px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .card { background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.emerald { background: #34d399; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+    .toolbar { display: flex; gap: 0.5rem; margin-left: auto; flex-shrink: 0; align-items: center; }
+    .toolbar-toggle { background: transparent; border: none; color: #475569; cursor: pointer; font-size: 1.25rem; line-height: 1; padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: color 0.2s, background 0.2s; }
+    .toolbar-toggle:hover { color: #94a3b8; background: rgba(30, 41, 59, 0.5); }
+    .toolbar-actions { display: none; gap: 0.5rem; }
+    .toolbar.expanded .toolbar-actions { display: flex; }
+    .toolbar-actions button { background: rgba(30, 41, 59, 0.8); border: 1px solid #334155; color: #94a3b8; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-family: inherit; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .toolbar-actions button:hover { background: rgba(51, 65, 85, 0.8); color: white; border-color: #475569; }
+    code { color: #c4b5fd; }
+    @media print { body { background: #020617; padding: 1rem; } .toolbar { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba Database Atlas</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">All authoritative schema sources found in the repository; solid arrows show declared foreign-key constraints only.</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1670 2835" role="img" aria-label="Spring AI Alibaba repository-wide database schema atlas">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <rect x="30" y="70" width="1260" height="922" rx="12" fill="rgba(251, 191, 36, 0.03)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="44" y="92" fill="#fbbf24" font-size="11" font-weight="700">Admin MySQL schema</text>
+        <text x="44" y="109" fill="#94a3b8" font-size="8">spring-ai-alibaba-admin/docker/middleware/init/mysql/admin-schema.sql</text>
+
+        <rect x="30" y="1012" width="1550" height="1210" rx="12" fill="rgba(34, 211, 238, 0.03)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="44" y="1034" fill="#22d3ee" font-size="11" font-weight="700">AgentScope MySQL schema</text>
+        <text x="44" y="1051" fill="#94a3b8" font-size="8">spring-ai-alibaba-admin/docker/middleware/init/mysql/agentscope-schema.sql</text>
+
+        <rect x="30" y="2252" width="600" height="274" rx="12" fill="rgba(52, 211, 153, 0.03)" stroke="#34d399" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="44" y="2274" fill="#34d399" font-size="11" font-weight="700">Graph checkpoint schema family</text>
+        <text x="44" y="2291" fill="#94a3b8" font-size="8">same logical ER shape in MysqlSaver, PostgresSaver, OracleSaver</text>
+
+        <rect x="670" y="2252" width="320" height="242" rx="12" fill="rgba(251, 146, 60, 0.03)" stroke="#fb923c" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="684" y="2274" fill="#fb923c" font-size="11" font-weight="700">Generic graph store table</text>
+        <text x="684" y="2291" fill="#94a3b8" font-size="8">spring-ai-alibaba-graph-core/.../DatabaseStore.java</text>
+
+        <rect x="1030" y="2252" width="610" height="438" rx="12" fill="rgba(148, 163, 184, 0.03)" stroke="#94a3b8" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="1044" y="2274" fill="#94a3b8" font-size="11" font-weight="700">Chinook demo H2 schema</text>
+        <text x="1044" y="2291" fill="#94a3b8" font-size="8">examples/.../schema-chinook.sql</text>
+
+        <path d="M 190.0 278 L 190.0 410" fill="none" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="190.0" y="334.0" fill="#c4b5fd" font-size="8" text-anchor="middle">dataset.id → dataset_version.dataset_id</text>
+        <path d="M 190.0 278 L 190.0 686" fill="none" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="190.0" y="472.0" fill="#c4b5fd" font-size="8" text-anchor="middle">dataset.id → dataset_item.dataset_id</text>
+        <path d="M 478.0 262 L 478.0 410" fill="none" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="478.0" y="326.0" fill="#c4b5fd" font-size="8" text-anchor="middle">evaluator.id → evaluator_version.evaluator_id</text>
+
+        <path d="M 190.0 2396 L 190.0 2420 Q 190.0 2430 200.0 2430 L 468.0 2430 Q 478.0 2430 478.0 2440 L 478.0 2300" fill="none" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="334.0" y="2414" fill="#c4b5fd" font-size="8" text-anchor="middle">GraphThread.thread_id → GraphCheckpoint.thread_id</text>
+
+        <path d="M 1190.0 2380 L 1190.0 2414.0 Q 1190.0 2424.0 1200.0 2424.0 L 1468.0 2424.0 Q 1478.0 2424.0 1478.0 2434.0 L 1478.0 2448" fill="none" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="1334.0" y="2404.0" fill="#c4b5fd" font-size="8" text-anchor="middle">Genre.GenreId → Track.GenreId</text>
+
+        <rect x="60" y="120" width="260" height="158" rx="8" fill="#0f172a"/>
+        <rect x="60" y="120" width="260" height="158" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="120" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="154" x2="320" y2="154" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="142" fill="white" font-size="12" font-weight="700">dataset</text>
+        <rect x="72" y="159" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="169" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="170" fill="#d1fae5" font-size="9">id</text>
+        <text x="72" y="186" fill="#cbd5e1" font-size="9">name</text>
+        <text x="72" y="202" fill="#cbd5e1" font-size="9">description</text>
+        <text x="72" y="218" fill="#cbd5e1" font-size="9">columns_config</text>
+        <text x="72" y="234" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="72" y="250" fill="#cbd5e1" font-size="9">update_time</text>
+        <text x="72" y="266" fill="#cbd5e1" font-size="9">deleted</text>
+
+        <rect x="60" y="412" width="260" height="206" rx="8" fill="#0f172a"/>
+        <rect x="60" y="412" width="260" height="206" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="412" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="446" x2="320" y2="446" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="434" fill="white" font-size="12" font-weight="700">dataset_version</text>
+        <rect x="72" y="451" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="461" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="462" fill="#d1fae5" font-size="9">id</text>
+        <rect x="72" y="467" width="24" height="13" rx="3" fill="rgba(251, 191, 36, 0.16)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="84" y="477" fill="#fbbf24" font-size="8" font-weight="700" text-anchor="middle">FK</text>
+        <text x="106" y="478" fill="#fef3c7" font-size="9">dataset_id</text>
+        <text x="72" y="494" fill="#cbd5e1" font-size="9">version</text>
+        <text x="72" y="510" fill="#cbd5e1" font-size="9">description</text>
+        <text x="72" y="526" fill="#cbd5e1" font-size="9">data_count</text>
+        <text x="72" y="542" fill="#cbd5e1" font-size="9">status</text>
+        <text x="72" y="558" fill="#cbd5e1" font-size="9">experiments</text>
+        <text x="72" y="574" fill="#cbd5e1" font-size="9">dataset_items</text>
+        <text x="72" y="590" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="72" y="606" fill="#cbd5e1" font-size="9">update_time</text>
+
+        <rect x="60" y="688" width="260" height="158" rx="8" fill="#0f172a"/>
+        <rect x="60" y="688" width="260" height="158" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="688" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="722" x2="320" y2="722" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="710" fill="white" font-size="12" font-weight="700">dataset_item</text>
+        <rect x="72" y="727" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="737" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="738" fill="#d1fae5" font-size="9">id</text>
+        <rect x="72" y="743" width="24" height="13" rx="3" fill="rgba(251, 191, 36, 0.16)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="84" y="753" fill="#fbbf24" font-size="8" font-weight="700" text-anchor="middle">FK</text>
+        <text x="106" y="754" fill="#fef3c7" font-size="9">dataset_id</text>
+        <text x="72" y="770" fill="#cbd5e1" font-size="9">columns_config</text>
+        <text x="72" y="786" fill="#cbd5e1" font-size="9">data_content</text>
+        <text x="72" y="802" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="72" y="818" fill="#cbd5e1" font-size="9">update_time</text>
+        <text x="72" y="834" fill="#cbd5e1" font-size="9">deleted</text>
+
+        <rect x="348" y="120" width="260" height="142" rx="8" fill="#0f172a"/>
+        <rect x="348" y="120" width="260" height="142" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="120" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="154" x2="608" y2="154" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="142" fill="white" font-size="12" font-weight="700">evaluator</text>
+        <rect x="360" y="159" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="169" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="170" fill="#d1fae5" font-size="9">id</text>
+        <text x="360" y="186" fill="#cbd5e1" font-size="9">name</text>
+        <text x="360" y="202" fill="#cbd5e1" font-size="9">description</text>
+        <text x="360" y="218" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="360" y="234" fill="#cbd5e1" font-size="9">update_time</text>
+        <text x="360" y="250" fill="#cbd5e1" font-size="9">deleted</text>
+
+        <rect x="348" y="412" width="260" height="222" rx="8" fill="#0f172a"/>
+        <rect x="348" y="412" width="260" height="222" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="412" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="446" x2="608" y2="446" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="434" fill="white" font-size="12" font-weight="700">evaluator_version</text>
+        <rect x="360" y="451" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="461" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="462" fill="#d1fae5" font-size="9">id</text>
+        <rect x="360" y="467" width="24" height="13" rx="3" fill="rgba(251, 191, 36, 0.16)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="372" y="477" fill="#fbbf24" font-size="8" font-weight="700" text-anchor="middle">FK</text>
+        <text x="394" y="478" fill="#fef3c7" font-size="9">evaluator_id</text>
+        <text x="360" y="494" fill="#cbd5e1" font-size="9">description</text>
+        <text x="360" y="510" fill="#cbd5e1" font-size="9">version</text>
+        <text x="360" y="526" fill="#cbd5e1" font-size="9">model_config</text>
+        <text x="360" y="542" fill="#cbd5e1" font-size="9">prompt</text>
+        <text x="360" y="558" fill="#cbd5e1" font-size="9">variables</text>
+        <text x="360" y="574" fill="#cbd5e1" font-size="9">status</text>
+        <text x="360" y="590" fill="#cbd5e1" font-size="9">experiments</text>
+        <text x="360" y="606" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="360" y="622" fill="#cbd5e1" font-size="9">update_time</text>
+
+        <rect x="348" y="688" width="260" height="142" rx="8" fill="#0f172a"/>
+        <rect x="348" y="688" width="260" height="142" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="688" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="722" x2="608" y2="722" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="710" fill="white" font-size="12" font-weight="700">evaluator_template</text>
+        <rect x="360" y="727" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="737" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="738" fill="#d1fae5" font-size="9">id</text>
+        <text x="360" y="754" fill="#cbd5e1" font-size="9">evaluator_template_key</text>
+        <text x="360" y="770" fill="#cbd5e1" font-size="9">template_desc</text>
+        <text x="360" y="786" fill="#cbd5e1" font-size="9">template</text>
+        <text x="360" y="802" fill="#cbd5e1" font-size="9">variables</text>
+        <text x="360" y="818" fill="#cbd5e1" font-size="9">model_config</text>
+
+        <rect x="636" y="688" width="260" height="254" rx="8" fill="#0f172a"/>
+        <rect x="636" y="688" width="260" height="254" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="636" y="688" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="636" y1="722" x2="896" y2="722" stroke="#6d28d9" stroke-width="1"/>
+        <text x="648" y="710" fill="white" font-size="12" font-weight="700">experiment</text>
+        <rect x="648" y="727" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="660" y="737" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="682" y="738" fill="#d1fae5" font-size="9">id</text>
+        <text x="648" y="754" fill="#cbd5e1" font-size="9">name</text>
+        <text x="648" y="770" fill="#cbd5e1" font-size="9">description</text>
+        <text x="648" y="786" fill="#cbd5e1" font-size="9">dataset_id</text>
+        <text x="648" y="802" fill="#cbd5e1" font-size="9">dataset_version_id</text>
+        <text x="648" y="818" fill="#cbd5e1" font-size="9">dataset_version</text>
+        <text x="648" y="834" fill="#cbd5e1" font-size="9">evaluation_object_config</text>
+        <text x="648" y="850" fill="#cbd5e1" font-size="9">evaluator_config</text>
+        <text x="648" y="866" fill="#cbd5e1" font-size="9">status</text>
+        <text x="648" y="882" fill="#cbd5e1" font-size="9">progress</text>
+        <text x="648" y="898" fill="#cbd5e1" font-size="9">complete_time</text>
+        <text x="648" y="914" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="648" y="930" fill="#cbd5e1" font-size="9">update_time</text>
+
+        <rect x="924" y="688" width="260" height="222" rx="8" fill="#0f172a"/>
+        <rect x="924" y="688" width="260" height="222" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="924" y="688" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="924" y1="722" x2="1184" y2="722" stroke="#6d28d9" stroke-width="1"/>
+        <text x="936" y="710" fill="white" font-size="12" font-weight="700">experiment_result</text>
+        <rect x="936" y="727" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="948" y="737" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="970" y="738" fill="#d1fae5" font-size="9">id</text>
+        <text x="936" y="754" fill="#cbd5e1" font-size="9">experiment_id</text>
+        <text x="936" y="770" fill="#cbd5e1" font-size="9">input</text>
+        <text x="936" y="786" fill="#cbd5e1" font-size="9">actual_output</text>
+        <text x="936" y="802" fill="#cbd5e1" font-size="9">reference_output</text>
+        <text x="936" y="818" fill="#cbd5e1" font-size="9">score</text>
+        <text x="936" y="834" fill="#cbd5e1" font-size="9">reason</text>
+        <text x="936" y="850" fill="#cbd5e1" font-size="9">evaluation_time</text>
+        <text x="936" y="866" fill="#cbd5e1" font-size="9">evaluator_version_id</text>
+        <text x="936" y="882" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="936" y="898" fill="#cbd5e1" font-size="9">update_time</text>
+
+        <rect x="636" y="120" width="260" height="158" rx="8" fill="#0f172a"/>
+        <rect x="636" y="120" width="260" height="158" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="636" y="120" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="636" y1="154" x2="896" y2="154" stroke="#6d28d9" stroke-width="1"/>
+        <text x="648" y="142" fill="white" font-size="12" font-weight="700">prompt</text>
+        <rect x="648" y="159" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="660" y="169" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="682" y="170" fill="#d1fae5" font-size="9">id</text>
+        <text x="648" y="186" fill="#cbd5e1" font-size="9">prompt_key</text>
+        <text x="648" y="202" fill="#cbd5e1" font-size="9">prompt_desc</text>
+        <text x="648" y="218" fill="#cbd5e1" font-size="9">latest_version</text>
+        <text x="648" y="234" fill="#cbd5e1" font-size="9">tags</text>
+        <text x="648" y="250" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="648" y="266" fill="#cbd5e1" font-size="9">update_time</text>
+
+        <rect x="636" y="412" width="260" height="206" rx="8" fill="#0f172a"/>
+        <rect x="636" y="412" width="260" height="206" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="636" y="412" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="636" y1="446" x2="896" y2="446" stroke="#6d28d9" stroke-width="1"/>
+        <text x="648" y="434" fill="white" font-size="12" font-weight="700">prompt_version</text>
+        <rect x="648" y="451" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="660" y="461" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="682" y="462" fill="#d1fae5" font-size="9">id</text>
+        <text x="648" y="478" fill="#cbd5e1" font-size="9">version</text>
+        <text x="648" y="494" fill="#cbd5e1" font-size="9">prompt_key</text>
+        <text x="648" y="510" fill="#cbd5e1" font-size="9">version_desc</text>
+        <text x="648" y="526" fill="#cbd5e1" font-size="9">template</text>
+        <text x="648" y="542" fill="#cbd5e1" font-size="9">variables</text>
+        <text x="648" y="558" fill="#cbd5e1" font-size="9">model_config</text>
+        <text x="648" y="574" fill="#cbd5e1" font-size="9">status</text>
+        <text x="648" y="590" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="648" y="606" fill="#cbd5e1" font-size="9">previous_version</text>
+
+        <rect x="924" y="412" width="260" height="158" rx="8" fill="#0f172a"/>
+        <rect x="924" y="412" width="260" height="158" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="924" y="412" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="924" y1="446" x2="1184" y2="446" stroke="#6d28d9" stroke-width="1"/>
+        <text x="936" y="434" fill="white" font-size="12" font-weight="700">prompt_build_template</text>
+        <rect x="936" y="451" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="948" y="461" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="970" y="462" fill="#d1fae5" font-size="9">id</text>
+        <text x="936" y="478" fill="#cbd5e1" font-size="9">prompt_template_key</text>
+        <text x="936" y="494" fill="#cbd5e1" font-size="9">tags</text>
+        <text x="936" y="510" fill="#cbd5e1" font-size="9">template_desc</text>
+        <text x="936" y="526" fill="#cbd5e1" font-size="9">template</text>
+        <text x="936" y="542" fill="#cbd5e1" font-size="9">variables</text>
+        <text x="936" y="558" fill="#cbd5e1" font-size="9">model_config</text>
+
+        <rect x="924" y="120" width="260" height="238" rx="8" fill="#0f172a"/>
+        <rect x="924" y="120" width="260" height="238" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="924" y="120" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="924" y1="154" x2="1184" y2="154" stroke="#6d28d9" stroke-width="1"/>
+        <text x="936" y="142" fill="white" font-size="12" font-weight="700">model_config</text>
+        <rect x="936" y="159" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="948" y="169" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="970" y="170" fill="#d1fae5" font-size="9">id</text>
+        <text x="936" y="186" fill="#cbd5e1" font-size="9">name</text>
+        <text x="936" y="202" fill="#cbd5e1" font-size="9">provider</text>
+        <text x="936" y="218" fill="#cbd5e1" font-size="9">model_name</text>
+        <text x="936" y="234" fill="#cbd5e1" font-size="9">base_url</text>
+        <text x="936" y="250" fill="#cbd5e1" font-size="9">api_key</text>
+        <text x="936" y="266" fill="#cbd5e1" font-size="9">default_parameters</text>
+        <text x="936" y="282" fill="#cbd5e1" font-size="9">supported_parameters</text>
+        <text x="936" y="298" fill="#cbd5e1" font-size="9">status</text>
+        <text x="936" y="314" fill="#cbd5e1" font-size="9">create_time</text>
+        <text x="936" y="330" fill="#cbd5e1" font-size="9">update_time</text>
+        <text x="936" y="346" fill="#cbd5e1" font-size="9">deleted</text>
+
+        <rect x="60" y="1062" width="260" height="286" rx="8" fill="#0f172a"/>
+        <rect x="60" y="1062" width="260" height="286" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="1062" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="1096" x2="320" y2="1096" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="1084" fill="white" font-size="12" font-weight="700">account</text>
+        <rect x="72" y="1101" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="1111" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="1112" fill="#d1fae5" font-size="9">id</text>
+        <text x="72" y="1128" fill="#cbd5e1" font-size="9">account_id</text>
+        <text x="72" y="1144" fill="#cbd5e1" font-size="9">username</text>
+        <text x="72" y="1160" fill="#cbd5e1" font-size="9">email</text>
+        <text x="72" y="1176" fill="#cbd5e1" font-size="9">mobile</text>
+        <text x="72" y="1192" fill="#cbd5e1" font-size="9">password</text>
+        <text x="72" y="1208" fill="#cbd5e1" font-size="9">nickname</text>
+        <text x="72" y="1224" fill="#cbd5e1" font-size="9">icon</text>
+        <text x="72" y="1240" fill="#cbd5e1" font-size="9">type</text>
+        <text x="72" y="1256" fill="#cbd5e1" font-size="9">status</text>
+        <text x="72" y="1272" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="72" y="1288" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="72" y="1304" fill="#cbd5e1" font-size="9">gmt_last_login</text>
+        <text x="72" y="1320" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="72" y="1336" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="636" y="1062" width="260" height="254" rx="8" fill="#0f172a"/>
+        <rect x="636" y="1062" width="260" height="254" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="636" y="1062" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="636" y1="1096" x2="896" y2="1096" stroke="#6d28d9" stroke-width="1"/>
+        <text x="648" y="1084" fill="white" font-size="12" font-weight="700">application</text>
+        <rect x="648" y="1101" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="660" y="1111" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="682" y="1112" fill="#d1fae5" font-size="9">id</text>
+        <text x="648" y="1128" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="648" y="1144" fill="#cbd5e1" font-size="9">app_id</text>
+        <text x="648" y="1160" fill="#cbd5e1" font-size="9">name</text>
+        <text x="648" y="1176" fill="#cbd5e1" font-size="9">description</text>
+        <text x="648" y="1192" fill="#cbd5e1" font-size="9">icon</text>
+        <text x="648" y="1208" fill="#cbd5e1" font-size="9">source</text>
+        <text x="648" y="1224" fill="#cbd5e1" font-size="9">type</text>
+        <text x="648" y="1240" fill="#cbd5e1" font-size="9">status</text>
+        <text x="648" y="1256" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="648" y="1272" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="648" y="1288" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="648" y="1304" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="348" y="1402" width="260" height="222" rx="8" fill="#0f172a"/>
+        <rect x="348" y="1402" width="260" height="222" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="1402" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="1436" x2="608" y2="1436" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="1424" fill="white" font-size="12" font-weight="700">application_version</text>
+        <rect x="360" y="1441" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="1451" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="1452" fill="#d1fae5" font-size="9">id</text>
+        <text x="360" y="1468" fill="#cbd5e1" font-size="9">app_id</text>
+        <text x="360" y="1484" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="360" y="1500" fill="#cbd5e1" font-size="9">config</text>
+        <text x="360" y="1516" fill="#cbd5e1" font-size="9">status</text>
+        <text x="360" y="1532" fill="#cbd5e1" font-size="9">version</text>
+        <text x="360" y="1548" fill="#cbd5e1" font-size="9">description</text>
+        <text x="360" y="1564" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="360" y="1580" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="360" y="1596" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="360" y="1612" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="348" y="1062" width="260" height="222" rx="8" fill="#0f172a"/>
+        <rect x="348" y="1062" width="260" height="222" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="1062" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="1096" x2="608" y2="1096" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="1084" fill="white" font-size="12" font-weight="700">workspace</text>
+        <rect x="360" y="1101" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="1111" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="1112" fill="#d1fae5" font-size="9">id</text>
+        <text x="360" y="1128" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="360" y="1144" fill="#cbd5e1" font-size="9">account_id</text>
+        <text x="360" y="1160" fill="#cbd5e1" font-size="9">status</text>
+        <text x="360" y="1176" fill="#cbd5e1" font-size="9">name</text>
+        <text x="360" y="1192" fill="#cbd5e1" font-size="9">description</text>
+        <text x="360" y="1208" fill="#cbd5e1" font-size="9">config</text>
+        <text x="360" y="1224" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="360" y="1240" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="360" y="1256" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="360" y="1272" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="60" y="1402" width="260" height="190" rx="8" fill="#0f172a"/>
+        <rect x="60" y="1402" width="260" height="190" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="1402" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="1436" x2="320" y2="1436" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="1424" fill="white" font-size="12" font-weight="700">api_key</text>
+        <rect x="72" y="1441" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="1451" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="1452" fill="#d1fae5" font-size="9">id</text>
+        <text x="72" y="1468" fill="#cbd5e1" font-size="9">account_id</text>
+        <text x="72" y="1484" fill="#cbd5e1" font-size="9">api_key</text>
+        <text x="72" y="1500" fill="#cbd5e1" font-size="9">status</text>
+        <text x="72" y="1516" fill="#cbd5e1" font-size="9">description</text>
+        <text x="72" y="1532" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="72" y="1548" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="72" y="1564" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="72" y="1580" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="924" y="1062" width="260" height="254" rx="8" fill="#0f172a"/>
+        <rect x="924" y="1062" width="260" height="254" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="924" y="1062" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="924" y1="1096" x2="1184" y2="1096" stroke="#6d28d9" stroke-width="1"/>
+        <text x="936" y="1084" fill="white" font-size="12" font-weight="700">plugin</text>
+        <rect x="936" y="1101" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="948" y="1111" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="970" y="1112" fill="#d1fae5" font-size="9">id</text>
+        <text x="936" y="1128" fill="#cbd5e1" font-size="9">plugin_id</text>
+        <text x="936" y="1144" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="936" y="1160" fill="#cbd5e1" font-size="9">type</text>
+        <text x="936" y="1176" fill="#cbd5e1" font-size="9">status</text>
+        <text x="936" y="1192" fill="#cbd5e1" font-size="9">name</text>
+        <text x="936" y="1208" fill="#cbd5e1" font-size="9">description</text>
+        <text x="936" y="1224" fill="#cbd5e1" font-size="9">config</text>
+        <text x="936" y="1240" fill="#cbd5e1" font-size="9">source</text>
+        <text x="936" y="1256" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="936" y="1272" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="936" y="1288" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="936" y="1304" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="924" y="1402" width="260" height="286" rx="8" fill="#0f172a"/>
+        <rect x="924" y="1402" width="260" height="286" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="924" y="1402" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="924" y1="1436" x2="1184" y2="1436" stroke="#6d28d9" stroke-width="1"/>
+        <text x="936" y="1424" fill="white" font-size="12" font-weight="700">tool</text>
+        <rect x="936" y="1441" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="948" y="1451" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="970" y="1452" fill="#d1fae5" font-size="9">id</text>
+        <text x="936" y="1468" fill="#cbd5e1" font-size="9">plugin_id</text>
+        <text x="936" y="1484" fill="#cbd5e1" font-size="9">tool_id</text>
+        <text x="936" y="1500" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="936" y="1516" fill="#cbd5e1" font-size="9">status</text>
+        <text x="936" y="1532" fill="#cbd5e1" font-size="9">enabled</text>
+        <text x="936" y="1548" fill="#cbd5e1" font-size="9">test_status</text>
+        <text x="936" y="1564" fill="#cbd5e1" font-size="9">name</text>
+        <text x="936" y="1580" fill="#cbd5e1" font-size="9">description</text>
+        <text x="936" y="1596" fill="#cbd5e1" font-size="9">config</text>
+        <text x="936" y="1612" fill="#cbd5e1" font-size="9">api_schema</text>
+        <text x="936" y="1628" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="936" y="1644" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="936" y="1660" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="936" y="1676" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="1212" y="1062" width="260" height="286" rx="8" fill="#0f172a"/>
+        <rect x="1212" y="1062" width="260" height="286" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1212" y="1062" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1212" y1="1096" x2="1472" y2="1096" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1224" y="1084" fill="white" font-size="12" font-weight="700">knowledge_base</text>
+        <rect x="1224" y="1101" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1236" y="1111" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1258" y="1112" fill="#d1fae5" font-size="9">id</text>
+        <text x="1224" y="1128" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="1224" y="1144" fill="#cbd5e1" font-size="9">kb_id</text>
+        <text x="1224" y="1160" fill="#cbd5e1" font-size="9">type</text>
+        <text x="1224" y="1176" fill="#cbd5e1" font-size="9">status</text>
+        <text x="1224" y="1192" fill="#cbd5e1" font-size="9">name</text>
+        <text x="1224" y="1208" fill="#cbd5e1" font-size="9">description</text>
+        <text x="1224" y="1224" fill="#cbd5e1" font-size="9">process_config</text>
+        <text x="1224" y="1240" fill="#cbd5e1" font-size="9">index_config</text>
+        <text x="1224" y="1256" fill="#cbd5e1" font-size="9">search_config</text>
+        <text x="1224" y="1272" fill="#cbd5e1" font-size="9">total_docs</text>
+        <text x="1224" y="1288" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="1224" y="1304" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="1224" y="1320" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="1224" y="1336" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="1212" y="1402" width="260" height="382" rx="8" fill="#0f172a"/>
+        <rect x="1212" y="1402" width="260" height="382" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1212" y="1402" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1212" y1="1436" x2="1472" y2="1436" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1224" y="1424" fill="white" font-size="12" font-weight="700">document</text>
+        <rect x="1224" y="1441" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1236" y="1451" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1258" y="1452" fill="#d1fae5" font-size="9">id</text>
+        <text x="1224" y="1468" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="1224" y="1484" fill="#cbd5e1" font-size="9">kb_id</text>
+        <text x="1224" y="1500" fill="#cbd5e1" font-size="9">doc_id</text>
+        <text x="1224" y="1516" fill="#cbd5e1" font-size="9">type</text>
+        <text x="1224" y="1532" fill="#cbd5e1" font-size="9">status</text>
+        <text x="1224" y="1548" fill="#cbd5e1" font-size="9">enabled</text>
+        <text x="1224" y="1564" fill="#cbd5e1" font-size="9">name</text>
+        <text x="1224" y="1580" fill="#cbd5e1" font-size="9">format</text>
+        <text x="1224" y="1596" fill="#cbd5e1" font-size="9">size</text>
+        <text x="1224" y="1612" fill="#cbd5e1" font-size="9">metadata</text>
+        <text x="1224" y="1628" fill="#cbd5e1" font-size="9">index_status</text>
+        <text x="1224" y="1644" fill="#cbd5e1" font-size="9">path</text>
+        <text x="1224" y="1660" fill="#cbd5e1" font-size="9">parsed_path</text>
+        <text x="1224" y="1676" fill="#cbd5e1" font-size="9">process_config</text>
+        <text x="1224" y="1692" fill="#cbd5e1" font-size="9">source</text>
+        <text x="1224" y="1708" fill="#cbd5e1" font-size="9">error</text>
+        <text x="1224" y="1724" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="1224" y="1740" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="1224" y="1756" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="1224" y="1772" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="636" y="1402" width="260" height="270" rx="8" fill="#0f172a"/>
+        <rect x="636" y="1402" width="260" height="270" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="636" y="1402" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="636" y1="1436" x2="896" y2="1436" stroke="#6d28d9" stroke-width="1"/>
+        <text x="648" y="1424" fill="white" font-size="12" font-weight="700">application_component</text>
+        <rect x="648" y="1441" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="660" y="1451" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="682" y="1452" fill="#d1fae5" font-size="9">id</text>
+        <text x="648" y="1468" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="648" y="1484" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="648" y="1500" fill="#cbd5e1" font-size="9">code</text>
+        <text x="648" y="1516" fill="#cbd5e1" font-size="9">name</text>
+        <text x="648" y="1532" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="648" y="1548" fill="#cbd5e1" font-size="9">type</text>
+        <text x="648" y="1564" fill="#cbd5e1" font-size="9">app_id</text>
+        <text x="648" y="1580" fill="#cbd5e1" font-size="9">config</text>
+        <text x="648" y="1596" fill="#cbd5e1" font-size="9">description</text>
+        <text x="648" y="1612" fill="#cbd5e1" font-size="9">status</text>
+        <text x="648" y="1628" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="648" y="1644" fill="#cbd5e1" font-size="9">modifier</text>
+        <text x="648" y="1660" fill="#cbd5e1" font-size="9">need_update</text>
+
+        <rect x="924" y="1838" width="260" height="174" rx="8" fill="#0f172a"/>
+        <rect x="924" y="1838" width="260" height="174" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="924" y="1838" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="924" y1="1872" x2="1184" y2="1872" stroke="#6d28d9" stroke-width="1"/>
+        <text x="936" y="1860" fill="white" font-size="12" font-weight="700">reference</text>
+        <rect x="936" y="1877" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="948" y="1887" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="970" y="1888" fill="#d1fae5" font-size="9">id</text>
+        <text x="936" y="1904" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="936" y="1920" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="936" y="1936" fill="#cbd5e1" font-size="9">main_code</text>
+        <text x="936" y="1952" fill="#cbd5e1" font-size="9">main_type</text>
+        <text x="936" y="1968" fill="#cbd5e1" font-size="9">refer_code</text>
+        <text x="936" y="1984" fill="#cbd5e1" font-size="9">refer_type</text>
+        <text x="936" y="2000" fill="#cbd5e1" font-size="9">workspace_id</text>
+
+        <rect x="636" y="1838" width="260" height="318" rx="8" fill="#0f172a"/>
+        <rect x="636" y="1838" width="260" height="318" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="636" y="1838" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="636" y1="1872" x2="896" y2="1872" stroke="#6d28d9" stroke-width="1"/>
+        <text x="648" y="1860" fill="white" font-size="12" font-weight="700">mcp_server</text>
+        <rect x="648" y="1877" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="660" y="1887" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="682" y="1888" fill="#d1fae5" font-size="9">id</text>
+        <text x="648" y="1904" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="648" y="1920" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="648" y="1936" fill="#cbd5e1" font-size="9">server_code</text>
+        <text x="648" y="1952" fill="#cbd5e1" font-size="9">name</text>
+        <text x="648" y="1968" fill="#cbd5e1" font-size="9">description</text>
+        <text x="648" y="1984" fill="#cbd5e1" font-size="9">source</text>
+        <text x="648" y="2000" fill="#cbd5e1" font-size="9">deploy_env</text>
+        <text x="648" y="2016" fill="#cbd5e1" font-size="9">type</text>
+        <text x="648" y="2032" fill="#cbd5e1" font-size="9">deploy_config</text>
+        <text x="648" y="2048" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="648" y="2064" fill="#cbd5e1" font-size="9">account_id</text>
+        <text x="648" y="2080" fill="#cbd5e1" font-size="9">status</text>
+        <text x="648" y="2096" fill="#cbd5e1" font-size="9">biz_type</text>
+        <text x="648" y="2112" fill="#cbd5e1" font-size="9">detail_config</text>
+        <text x="648" y="2128" fill="#cbd5e1" font-size="9">host</text>
+        <text x="648" y="2144" fill="#cbd5e1" font-size="9">install_type</text>
+
+        <rect x="60" y="1838" width="260" height="286" rx="8" fill="#0f172a"/>
+        <rect x="60" y="1838" width="260" height="286" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="1838" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="1872" x2="320" y2="1872" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="1860" fill="white" font-size="12" font-weight="700">provider</text>
+        <rect x="72" y="1877" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="1887" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="1888" fill="#d1fae5" font-size="9">id</text>
+        <text x="72" y="1904" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="72" y="1920" fill="#cbd5e1" font-size="9">icon</text>
+        <text x="72" y="1936" fill="#cbd5e1" font-size="9">name</text>
+        <text x="72" y="1952" fill="#cbd5e1" font-size="9">description</text>
+        <text x="72" y="1968" fill="#cbd5e1" font-size="9">provider</text>
+        <text x="72" y="1984" fill="#cbd5e1" font-size="9">enable</text>
+        <text x="72" y="2000" fill="#cbd5e1" font-size="9">source</text>
+        <text x="72" y="2016" fill="#cbd5e1" font-size="9">credential</text>
+        <text x="72" y="2032" fill="#cbd5e1" font-size="9">supported_model_types</text>
+        <text x="72" y="2048" fill="#cbd5e1" font-size="9">protocol</text>
+        <text x="72" y="2064" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="72" y="2080" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="72" y="2096" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="72" y="2112" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="348" y="1838" width="260" height="286" rx="8" fill="#0f172a"/>
+        <rect x="348" y="1838" width="260" height="286" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="1838" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="1872" x2="608" y2="1872" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="1860" fill="white" font-size="12" font-weight="700">model</text>
+        <rect x="360" y="1877" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="1887" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="1888" fill="#d1fae5" font-size="9">id</text>
+        <text x="360" y="1904" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="360" y="1920" fill="#cbd5e1" font-size="9">icon</text>
+        <text x="360" y="1936" fill="#cbd5e1" font-size="9">name</text>
+        <text x="360" y="1952" fill="#cbd5e1" font-size="9">type</text>
+        <text x="360" y="1968" fill="#cbd5e1" font-size="9">mode</text>
+        <text x="360" y="1984" fill="#cbd5e1" font-size="9">model_id</text>
+        <text x="360" y="2000" fill="#cbd5e1" font-size="9">provider</text>
+        <text x="360" y="2016" fill="#cbd5e1" font-size="9">enable</text>
+        <text x="360" y="2032" fill="#cbd5e1" font-size="9">tags</text>
+        <text x="360" y="2048" fill="#cbd5e1" font-size="9">source</text>
+        <text x="360" y="2064" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="360" y="2080" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="360" y="2096" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="360" y="2112" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="1212" y="1838" width="260" height="334" rx="8" fill="#0f172a"/>
+        <rect x="1212" y="1838" width="260" height="334" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1212" y="1838" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1212" y1="1872" x2="1472" y2="1872" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1224" y="1860" fill="white" font-size="12" font-weight="700">agent_schema</text>
+        <rect x="1224" y="1877" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1236" y="1887" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1258" y="1888" fill="#d1fae5" font-size="9">id</text>
+        <text x="1224" y="1904" fill="#cbd5e1" font-size="9">agent_id</text>
+        <text x="1224" y="1920" fill="#cbd5e1" font-size="9">workspace_id</text>
+        <text x="1224" y="1936" fill="#cbd5e1" font-size="9">name</text>
+        <text x="1224" y="1952" fill="#cbd5e1" font-size="9">description</text>
+        <text x="1224" y="1968" fill="#cbd5e1" font-size="9">type</text>
+        <text x="1224" y="1984" fill="#cbd5e1" font-size="9">instruction</text>
+        <text x="1224" y="2000" fill="#cbd5e1" font-size="9">input_keys</text>
+        <text x="1224" y="2016" fill="#cbd5e1" font-size="9">output_key</text>
+        <text x="1224" y="2032" fill="#cbd5e1" font-size="9">handle</text>
+        <text x="1224" y="2048" fill="#cbd5e1" font-size="9">sub_agents</text>
+        <text x="1224" y="2064" fill="#cbd5e1" font-size="9">yaml_schema</text>
+        <text x="1224" y="2080" fill="#cbd5e1" font-size="9">status</text>
+        <text x="1224" y="2096" fill="#cbd5e1" font-size="9">enabled</text>
+        <text x="1224" y="2112" fill="#cbd5e1" font-size="9">gmt_create</text>
+        <text x="1224" y="2128" fill="#cbd5e1" font-size="9">gmt_modified</text>
+        <text x="1224" y="2144" fill="#cbd5e1" font-size="9">creator</text>
+        <text x="1224" y="2160" fill="#cbd5e1" font-size="9">modifier</text>
+
+        <rect x="60" y="2302" width="260" height="94" rx="8" fill="#0f172a"/>
+        <rect x="60" y="2302" width="260" height="94" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="60" y="2302" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="60" y1="2336" x2="320" y2="2336" stroke="#6d28d9" stroke-width="1"/>
+        <text x="72" y="2324" fill="white" font-size="12" font-weight="700">GraphThread</text>
+        <rect x="72" y="2341" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="84" y="2351" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="106" y="2352" fill="#d1fae5" font-size="9">thread_id</text>
+        <text x="72" y="2368" fill="#cbd5e1" font-size="9">thread_name</text>
+        <text x="72" y="2384" fill="#cbd5e1" font-size="9">is_released</text>
+
+        <rect x="348" y="2302" width="260" height="174" rx="8" fill="#0f172a"/>
+        <rect x="348" y="2302" width="260" height="174" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="348" y="2302" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="348" y1="2336" x2="608" y2="2336" stroke="#6d28d9" stroke-width="1"/>
+        <text x="360" y="2324" fill="white" font-size="12" font-weight="700">GraphCheckpoint</text>
+        <rect x="360" y="2341" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="372" y="2351" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="394" y="2352" fill="#d1fae5" font-size="9">checkpoint_id</text>
+        <text x="360" y="2368" fill="#cbd5e1" font-size="9">parent_checkpoint_id</text>
+        <rect x="360" y="2373" width="24" height="13" rx="3" fill="rgba(251, 191, 36, 0.16)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="372" y="2383" fill="#fbbf24" font-size="8" font-weight="700" text-anchor="middle">FK</text>
+        <text x="394" y="2384" fill="#fef3c7" font-size="9">thread_id</text>
+        <text x="360" y="2400" fill="#cbd5e1" font-size="9">node_id</text>
+        <text x="360" y="2416" fill="#cbd5e1" font-size="9">next_node_id</text>
+        <text x="360" y="2432" fill="#cbd5e1" font-size="9">state_data</text>
+        <text x="360" y="2448" fill="#cbd5e1" font-size="9">state_content_type</text>
+        <text x="360" y="2464" fill="#cbd5e1" font-size="9">saved_at</text>
+
+        <rect x="700" y="2302" width="260" height="142" rx="8" fill="#0f172a"/>
+        <rect x="700" y="2302" width="260" height="142" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="700" y="2302" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="700" y1="2336" x2="960" y2="2336" stroke="#6d28d9" stroke-width="1"/>
+        <text x="712" y="2324" fill="white" font-size="12" font-weight="700">{tableName}</text>
+        <rect x="712" y="2341" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="724" y="2351" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="746" y="2352" fill="#d1fae5" font-size="9">id</text>
+        <text x="712" y="2368" fill="#cbd5e1" font-size="9">namespace</text>
+        <text x="712" y="2384" fill="#cbd5e1" font-size="9">key_name</text>
+        <text x="712" y="2400" fill="#cbd5e1" font-size="9">value_json</text>
+        <text x="712" y="2416" fill="#cbd5e1" font-size="9">created_at</text>
+        <text x="712" y="2432" fill="#cbd5e1" font-size="9">updated_at</text>
+
+        <rect x="1060" y="2302" width="260" height="78" rx="8" fill="#0f172a"/>
+        <rect x="1060" y="2302" width="260" height="78" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1060" y="2302" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1060" y1="2336" x2="1320" y2="2336" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1072" y="2324" fill="white" font-size="12" font-weight="700">Genre</text>
+        <rect x="1072" y="2341" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1084" y="2351" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1106" y="2352" fill="#d1fae5" font-size="9">GenreId</text>
+        <text x="1072" y="2368" fill="#cbd5e1" font-size="9">Name</text>
+
+        <rect x="1348" y="2450" width="260" height="190" rx="8" fill="#0f172a"/>
+        <rect x="1348" y="2450" width="260" height="190" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1348" y="2450" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1348" y1="2484" x2="1608" y2="2484" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1360" y="2472" fill="white" font-size="12" font-weight="700">Track</text>
+        <rect x="1360" y="2489" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1372" y="2499" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1394" y="2500" fill="#d1fae5" font-size="9">TrackId</text>
+        <text x="1360" y="2516" fill="#cbd5e1" font-size="9">Name</text>
+        <text x="1360" y="2532" fill="#cbd5e1" font-size="9">AlbumId</text>
+        <text x="1360" y="2548" fill="#cbd5e1" font-size="9">MediaTypeId</text>
+        <rect x="1360" y="2553" width="24" height="13" rx="3" fill="rgba(251, 191, 36, 0.16)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="1372" y="2563" fill="#fbbf24" font-size="8" font-weight="700" text-anchor="middle">FK</text>
+        <text x="1394" y="2564" fill="#fef3c7" font-size="9">GenreId</text>
+        <text x="1360" y="2580" fill="#cbd5e1" font-size="9">Composer</text>
+        <text x="1360" y="2596" fill="#cbd5e1" font-size="9">Milliseconds</text>
+        <text x="1360" y="2612" fill="#cbd5e1" font-size="9">Bytes</text>
+        <text x="1360" y="2628" fill="#cbd5e1" font-size="9">UnitPrice</text>
+
+        <rect x="1348" y="2302" width="260" height="94" rx="8" fill="#0f172a"/>
+        <rect x="1348" y="2302" width="260" height="94" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1348" y="2302" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1348" y1="2336" x2="1608" y2="2336" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1360" y="2324" fill="white" font-size="12" font-weight="700">Album</text>
+        <rect x="1360" y="2341" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1372" y="2351" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1394" y="2352" fill="#d1fae5" font-size="9">AlbumId</text>
+        <text x="1360" y="2368" fill="#cbd5e1" font-size="9">Title</text>
+        <text x="1360" y="2384" fill="#cbd5e1" font-size="9">ArtistId</text>
+
+        <rect x="1060" y="2450" width="260" height="78" rx="8" fill="#0f172a"/>
+        <rect x="1060" y="2450" width="260" height="78" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="1060" y="2450" width="260" height="34" rx="8" fill="rgba(167, 139, 250, 0.16)"/>
+        <line x1="1060" y1="2484" x2="1320" y2="2484" stroke="#6d28d9" stroke-width="1"/>
+        <text x="1072" y="2472" fill="white" font-size="12" font-weight="700">Artist</text>
+        <rect x="1072" y="2489" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="1084" y="2499" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="1106" y="2500" fill="#d1fae5" font-size="9">ArtistId</text>
+        <text x="1072" y="2516" fill="#cbd5e1" font-size="9">Name</text>
+
+        <!-- Legend -->
+        <text x="40" y="2770" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="40" y="2782" width="24" height="13" rx="3" fill="rgba(16, 185, 129, 0.18)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="52" y="2792" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">PK</text>
+        <text x="72" y="2792" fill="#94a3b8" font-size="8">Primary key</text>
+        <rect x="164" y="2782" width="24" height="13" rx="3" fill="rgba(251, 191, 36, 0.16)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="176" y="2792" fill="#fbbf24" font-size="8" font-weight="700" text-anchor="middle">FK</text>
+        <text x="196" y="2792" fill="#94a3b8" font-size="8">Foreign key</text>
+        <line x1="300" y1="2788" x2="338" y2="2788" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="348" y="2792" fill="#94a3b8" font-size="8">Declared FK constraint</text>
+        <line x1="500" y1="2788" x2="538" y2="2788" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="548" y="2792" fill="#94a3b8" font-size="8">Schema boundary only</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Coverage</h3>
+        </div>
+        <ul>
+          <li>• 5 schema families</li>
+          <li>• 34 distinct tables</li>
+          <li>• 5 declared FK constraints</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Collapsed duplicates</h3>
+        </div>
+        <ul>
+          <li>• Graph checkpoint DDL appears in MySQL, PostgreSQL, and Oracle saver implementations</li>
+          <li>• The atlas renders that repeated ER shape once as a logical schema family</li>
+          <li>• No cross-schema relationships are declared in the inspected sources</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Reading note</h3>
+        </div>
+        <ul>
+          <li>• Similar-looking columns are not drawn as edges unless the source declares an FK</li>
+          <li>• Test-only DDL and generated SQL helpers are excluded from the atlas</li>
+          <li>• <code>{tableName}</code> is intentionally dynamic in <code>DatabaseStore</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Spring AI Alibaba • repository-wide database atlas • rendered from source DDL and table-creation code</p>
+  </div>
+
+  <script>
+    async function copyAsImage(btn) {
+      const orig = btn.textContent;
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ Copied!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+
+    async function downloadPNG(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const link = document.createElement('a');
+        link.download = 'spring-ai-alibaba-database-atlas.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '✓ Done!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+
+    async function downloadPDF(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('spring-ai-alibaba-database-atlas.pdf');
+        btn.textContent = '✓ Done!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+  </script>
+</body>
+</html>

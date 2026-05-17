@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1400 1320"
+     width="1400" height="1320"
+     font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace">
+
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="fk-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#a78bfa"/>
+    </marker>
+    <marker id="logical-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#020617"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="700" y="38" fill="#e2e8f0" font-size="20" font-weight="700" text-anchor="middle">Spring AI Alibaba Admin — Data Model (ER)</text>
+  <text x="700" y="60" fill="#94a3b8" font-size="11" text-anchor="middle">22 core tables · grouped by MySQL schema · solid = declared SQL FK · dashed = logical FK · all relationships shown as 1:N (parent → child)</text>
+
+  <!-- =================================================== -->
+  <!--  SCHEMA GROUP CONTAINERS                            -->
+  <!-- =================================================== -->
+
+  <!-- agentscope-schema container (left) -->
+  <rect x="20" y="90" width="750" height="895" rx="12" fill="rgba(15,23,42,0.55)" stroke="#475569" stroke-width="1.4" stroke-dasharray="8,5"/>
+  <text x="40" y="116" fill="#cbd5e1" font-size="13" font-weight="700">schema: agentscope</text>
+  <text x="190" y="116" fill="#94a3b8" font-size="10">Agent / Builder Platform · agentscope-schema.sql</text>
+
+  <!-- admin-schema container (right) -->
+  <rect x="820" y="90" width="525" height="895" rx="12" fill="rgba(15,23,42,0.55)" stroke="#475569" stroke-width="1.4" stroke-dasharray="8,5"/>
+  <text x="840" y="116" fill="#cbd5e1" font-size="13" font-weight="700">schema: admin</text>
+  <text x="958" y="116" fill="#94a3b8" font-size="10">Evaluation &amp; Prompt Management · admin-schema.sql</text>
+
+  <!-- =================================================== -->
+  <!--  ARROWS (drawn before boxes so they sit behind)     -->
+  <!-- =================================================== -->
+
+  <!-- == Declared SQL FKs (solid violet) == -->
+  <g stroke="#a78bfa" stroke-width="1.8" fill="none">
+    <!-- dataset → dataset_version : in-row, admin row 2 -->
+    <path d="M 1070 380 L 1095 380" marker-end="url(#fk-arrow)"/>
+    <!-- dataset → dataset_item : vertical, admin col 1, row 2 → row 3 -->
+    <path d="M 960 450 L 960 480" marker-end="url(#fk-arrow)"/>
+    <!-- evaluator → evaluator_version : in-row, admin row 4 -->
+    <path d="M 1070 720 L 1095 720" marker-end="url(#fk-arrow)"/>
+  </g>
+
+  <!-- == Logical FKs (dashed slate) == -->
+  <g stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5,4" fill="none">
+    <!-- account → workspace : agentscope row 1, col 1 → col 2 -->
+    <path d="M 250 210 L 275 210" marker-end="url(#logical-arrow)"/>
+    <!-- workspace → application : agentscope row 1 col 2 → row 2 col 1 -->
+    <path d="M 385 280 L 385 295 L 140 295 L 140 310" marker-end="url(#logical-arrow)"/>
+    <!-- workspace → application_component : agentscope row 1 col 2 → row 2 col 3 -->
+    <path d="M 385 280 L 385 295 L 630 295 L 630 310" marker-end="url(#logical-arrow)"/>
+    <!-- application → application_version : agentscope row 2 col 1 → col 2 -->
+    <path d="M 250 380 L 275 380" marker-end="url(#logical-arrow)"/>
+    <!-- application → application_component (optional) : agentscope row 2, col 1 → col 3, routed below -->
+    <path d="M 250 410 L 263 410 L 263 460 L 597 460 L 597 410 L 610 410" marker-end="url(#logical-arrow)"/>
+    <!-- plugin → tool : agentscope row 3 col 2 → col 3 -->
+    <path d="M 495 550 L 520 550" marker-end="url(#logical-arrow)"/>
+    <!-- knowledge_base → document : agentscope row 4 col 2 → col 3 -->
+    <path d="M 495 720 L 520 720" marker-end="url(#logical-arrow)"/>
+    <!-- provider → model : agentscope row 5 col 1 → col 2 -->
+    <path d="M 250 890 L 275 890" marker-end="url(#logical-arrow)"/>
+
+    <!-- prompt → prompt_version : admin row 1 col 1 → col 2 -->
+    <path d="M 1070 210 L 1095 210" marker-end="url(#logical-arrow)"/>
+    <!-- dataset_version → experiment : admin row 2 col 2 → row 5 col 1 (routed through inner gap) -->
+    <path d="M 1095 380 L 1082 380 L 1082 800 L 960 800 L 960 820" marker-end="url(#logical-arrow)"/>
+    <!-- experiment → experiment_result : admin row 5 col 1 → col 2 -->
+    <path d="M 1070 890 L 1095 890" marker-end="url(#logical-arrow)"/>
+    <!-- evaluator_version → experiment_result : admin col 2 row 4 → row 5 -->
+    <path d="M 1205 790 L 1205 820" marker-end="url(#logical-arrow)"/>
+  </g>
+
+  <!-- == Cardinality labels (1:N) on opaque plates so they remain readable == -->
+  <g font-size="9" font-weight="700">
+    <!-- account → workspace -->
+    <rect x="251" y="190" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="262" y="200" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- workspace → application -->
+    <rect x="252" y="280" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="263" y="290" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- workspace → application_component -->
+    <rect x="496" y="280" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="507" y="290" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- application → application_version -->
+    <rect x="251" y="361" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="262" y="371" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- application → application_component (optional, lower channel) -->
+    <rect x="419" y="447" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="430" y="457" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- plugin → tool -->
+    <rect x="496" y="531" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="507" y="541" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- knowledge_base → document -->
+    <rect x="496" y="701" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="507" y="711" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- provider → model -->
+    <rect x="251" y="871" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="262" y="881" fill="#cbd5e1" text-anchor="middle">1:N</text>
+
+    <!-- admin labels -->
+    <!-- prompt → prompt_version -->
+    <rect x="1071" y="191" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="1082" y="201" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- dataset → dataset_version (SQL FK) -->
+    <rect x="1071" y="361" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="1082" y="371" fill="#ede9fe" text-anchor="middle">1:N</text>
+    <!-- dataset → dataset_item (SQL FK) -->
+    <rect x="964" y="455" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="975" y="465" fill="#ede9fe" text-anchor="middle">1:N</text>
+    <!-- evaluator → evaluator_version (SQL FK) -->
+    <rect x="1071" y="701" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="1082" y="711" fill="#ede9fe" text-anchor="middle">1:N</text>
+    <!-- dataset_version → experiment -->
+    <rect x="1063" y="593" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="1074" y="603" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- experiment → experiment_result -->
+    <rect x="1071" y="871" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="1082" y="881" fill="#cbd5e1" text-anchor="middle">1:N</text>
+    <!-- evaluator_version → experiment_result -->
+    <rect x="1185" y="798" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+    <text x="1196" y="808" fill="#cbd5e1" text-anchor="middle">1:N</text>
+  </g>
+
+  <!-- =================================================== -->
+  <!--  TABLE BOXES — agentscope-schema                    -->
+  <!-- =================================================== -->
+
+  <!-- account (row 1, col 1) — Tenancy/Violet -->
+  <g transform="translate(30,140)">
+    <rect width="220" height="140" rx="6" fill="#0b1023" stroke="#a78bfa" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(76, 29, 149, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(76, 29, 149, 0.85)"/>
+    <text x="110" y="18" fill="#ede9fe" font-size="12" font-weight="700" text-anchor="middle">account</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">account_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">username</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">basic|admin</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+    </g>
+  </g>
+
+  <!-- workspace (row 1, col 2) — Tenancy/Violet -->
+  <g transform="translate(275,140)">
+    <rect width="220" height="140" rx="6" fill="#0b1023" stroke="#a78bfa" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(76, 29, 149, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(76, 29, 149, 0.85)"/>
+    <text x="110" y="18" fill="#ede9fe" font-size="12" font-weight="700" text-anchor="middle">workspace</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">workspace_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">account_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">name</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+    </g>
+  </g>
+
+  <!-- application (row 2, col 1) — Apps/Emerald -->
+  <g transform="translate(30,310)">
+    <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">application</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">app_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">agent|workflow</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0..3</tspan></text>
+    </g>
+  </g>
+
+  <!-- application_version (row 2, col 2) — Apps/Emerald -->
+  <g transform="translate(275,310)">
+    <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">application_version</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">app_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0..3</tspan></text>
+    </g>
+  </g>
+
+  <!-- application_component (row 2, col 3) — Apps/Emerald -->
+  <g transform="translate(520,310)">
+    <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">application_component</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="64" fill="#e2e8f0">code</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">app_id?</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">agent|workflow</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1|2</tspan></text>
+    </g>
+  </g>
+
+  <!-- agent_schema (row 3, col 1) — Apps/Emerald -->
+  <g transform="translate(30,480)">
+    <rect width="220" height="140" rx="6" fill="#06231b" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(6, 78, 59, 0.85)"/>
+    <text x="110" y="18" fill="#d1fae5" font-size="12" font-weight="700" text-anchor="middle">agent_schema</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">agent_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">React/Para/Seq/…</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">DRAFT|PUB|ARCH</tspan></text>
+    </g>
+  </g>
+
+  <!-- plugin (row 3, col 2) — Plugins/Cyan -->
+  <g transform="translate(275,480)">
+    <rect width="220" height="140" rx="6" fill="#06202b" stroke="#22d3ee" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(8, 51, 68, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(8, 51, 68, 0.85)"/>
+    <text x="110" y="18" fill="#cffafe" font-size="12" font-weight="700" text-anchor="middle">plugin</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">plugin_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">1|2</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+    </g>
+  </g>
+
+  <!-- tool (row 3, col 3) — Plugins/Cyan -->
+  <g transform="translate(520,480)">
+    <rect width="220" height="140" rx="6" fill="#06202b" stroke="#22d3ee" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(8, 51, 68, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(8, 51, 68, 0.85)"/>
+    <text x="110" y="18" fill="#cffafe" font-size="12" font-weight="700" text-anchor="middle">tool</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">tool_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">plugin_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">api_schema</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">test_status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">1|2|3</tspan></text>
+    </g>
+  </g>
+
+  <!-- knowledge_base (row 4, col 2) — Knowledge/Amber -->
+  <g transform="translate(275,650)">
+    <rect width="220" height="140" rx="6" fill="#2a1c08" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(120, 53, 15, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(120, 53, 15, 0.85)"/>
+    <text x="110" y="18" fill="#fef3c7" font-size="12" font-weight="700" text-anchor="middle">knowledge_base</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">kb_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">total_docs</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+    </g>
+  </g>
+
+  <!-- document (row 4, col 3) — Knowledge/Amber -->
+  <g transform="translate(520,650)">
+    <rect width="220" height="140" rx="6" fill="#2a1c08" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(120, 53, 15, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(120, 53, 15, 0.85)"/>
+    <text x="110" y="18" fill="#fef3c7" font-size="12" font-weight="700" text-anchor="middle">document</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">doc_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">kb_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">file|url</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">index_status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">1|2|3</tspan></text>
+    </g>
+  </g>
+
+  <!-- provider (row 5, col 1) — Models/Rose -->
+  <g transform="translate(30,820)">
+    <rect width="220" height="140" rx="6" fill="#2a0d1a" stroke="#fb7185" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(136, 19, 55, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(136, 19, 55, 0.85)"/>
+    <text x="110" y="18" fill="#ffe4e6" font-size="12" font-weight="700" text-anchor="middle">provider</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws?</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="64" fill="#e2e8f0">provider</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">name</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">protocol</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">source</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">preset|custom</tspan></text>
+    </g>
+  </g>
+
+  <!-- model (row 5, col 2) — Models/Rose -->
+  <g transform="translate(275,820)">
+    <rect width="220" height="140" rx="6" fill="#2a0d1a" stroke="#fb7185" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(136, 19, 55, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(136, 19, 55, 0.85)"/>
+    <text x="110" y="18" fill="#ffe4e6" font-size="12" font-weight="700" text-anchor="middle">model</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws?</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="64" fill="#e2e8f0">model_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(100)</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">provider</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(100)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LLM|embed|rerank</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">tags</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+    </g>
+  </g>
+
+  <!-- mcp_server (row 5, col 3) — Models/Rose -->
+  <g transform="translate(520,820)">
+    <rect width="220" height="140" rx="6" fill="#2a0d1a" stroke="#fb7185" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(136, 19, 55, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(136, 19, 55, 0.85)"/>
+    <text x="110" y="18" fill="#ffe4e6" font-size="12" font-weight="700" text-anchor="middle">mcp_server</text>
+    <rect x="186" y="6" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+    <text x="200" y="16" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws?</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="64" fill="#e2e8f0">server_code</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">account_id?</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(64)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">type</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">OFFICIAL|CUST</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">install_type</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">npx|uvx|sse</tspan></text>
+    </g>
+  </g>
+
+  <!-- =================================================== -->
+  <!--  TABLE BOXES — admin-schema                         -->
+  <!-- =================================================== -->
+
+  <!-- prompt (row 1, col 1) — Prompts/Slate -->
+  <g transform="translate(850,140)">
+    <rect width="220" height="140" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(30, 41, 59, 0.95)"/>
+    <rect y="20" width="220" height="6" fill="rgba(30, 41, 59, 0.95)"/>
+    <text x="110" y="18" fill="#e2e8f0" font-size="12" font-weight="700" text-anchor="middle">prompt</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#94a3b8" font-weight="700">UQ</tspan><tspan x="40" y="64" fill="#e2e8f0">prompt_key</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">prompt_desc</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">latest_version</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">tags</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+    </g>
+  </g>
+
+  <!-- prompt_version (row 1, col 2) — Prompts/Slate -->
+  <g transform="translate(1095,140)">
+    <rect width="220" height="140" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(30, 41, 59, 0.95)"/>
+    <rect y="20" width="220" height="6" fill="rgba(30, 41, 59, 0.95)"/>
+    <text x="110" y="18" fill="#e2e8f0" font-size="12" font-weight="700" text-anchor="middle">prompt_version</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">prompt_key</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">template</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">pre|release</tspan></text>
+    </g>
+  </g>
+
+  <!-- dataset (row 2, col 1) — Evaluation/Orange -->
+  <g transform="translate(850,310)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">dataset</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="64" fill="#e2e8f0">name</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">description</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">TEXT</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">columns_config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">deleted</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+    </g>
+  </g>
+
+  <!-- dataset_version (row 2, col 2) — Evaluation/Orange -->
+  <g transform="translate(1095,310)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">dataset_version</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">dataset_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">data_count</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">INT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">DRAFT|PUB|ARCH</tspan></text>
+    </g>
+  </g>
+
+  <!-- dataset_item (row 3, col 1) — Evaluation/Orange -->
+  <g transform="translate(850,480)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">dataset_item</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">dataset_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">data_content</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">columns_config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">deleted</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+    </g>
+  </g>
+
+  <!-- evaluator (row 4, col 1) — Evaluation/Orange -->
+  <g transform="translate(850,650)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">evaluator</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="64" fill="#e2e8f0">name</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">VARCHAR(255)</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">description</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">TEXT</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">deleted</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">0|1</tspan></text>
+    </g>
+  </g>
+
+  <!-- evaluator_version (row 4, col 2) — Evaluation/Orange -->
+  <g transform="translate(1095,650)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">evaluator_version</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">evaluator_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="82" fill="#e2e8f0">version</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">VARCHAR(32)</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">model_config</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">TEXT</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">status</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">DRAFT|PUB|ARCH</tspan></text>
+    </g>
+  </g>
+
+  <!-- experiment (row 5, col 1) — Evaluation/Orange -->
+  <g transform="translate(850,820)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">experiment</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">dataset_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">dataset_version_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">status</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">DRAFT/RUN/…</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">progress</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">0..100</tspan></text>
+    </g>
+  </g>
+
+  <!-- experiment_result (row 5, col 2) — Evaluation/Orange -->
+  <g transform="translate(1095,820)">
+    <rect width="220" height="140" rx="6" fill="#2a1607" stroke="#fb923c" stroke-width="1.5"/>
+    <rect width="220" height="26" rx="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <rect y="20" width="220" height="6" fill="rgba(154, 52, 18, 0.85)"/>
+    <text x="110" y="18" fill="#ffedd5" font-size="12" font-weight="700" text-anchor="middle">experiment_result</text>
+    <g font-size="10">
+      <text><tspan x="10" y="46" fill="#fde68a" font-weight="700">PK</tspan><tspan x="40" y="46" fill="#e2e8f0">id</tspan><tspan x="210" y="46" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="64" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="64" fill="#e2e8f0">experiment_id</tspan><tspan x="210" y="64" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="10" y="82" fill="#a78bfa" font-weight="700">FK</tspan><tspan x="40" y="82" fill="#e2e8f0">evaluator_version_id</tspan><tspan x="210" y="82" fill="#94a3b8" text-anchor="end">BIGINT</tspan></text>
+      <text><tspan x="40" y="100" fill="#e2e8f0">score</tspan><tspan x="210" y="100" fill="#94a3b8" text-anchor="end">DECIMAL(3,2)</tspan></text>
+      <text><tspan x="40" y="118" fill="#e2e8f0">actual_output</tspan><tspan x="210" y="118" fill="#94a3b8" text-anchor="end">LONGTEXT</tspan></text>
+    </g>
+  </g>
+
+  <!-- =================================================== -->
+  <!--  LEGEND                                             -->
+  <!-- =================================================== -->
+  <g transform="translate(20, 1010)">
+    <rect width="1325" height="290" rx="8" fill="#0b1023" stroke="#334155" stroke-width="1"/>
+    <text x="20" y="26" fill="#e2e8f0" font-size="13" font-weight="700">Legend</text>
+
+    <!-- Row 1: domain swatches -->
+    <g transform="translate(20, 46)" font-size="10">
+      <rect x="0" y="0" width="14" height="14" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1.2"/>
+      <text x="22" y="11" fill="#e2e8f0">Tenancy &amp; Identity</text>
+
+      <rect x="180" y="0" width="14" height="14" rx="3" fill="rgba(6, 78, 59, 0.6)" stroke="#34d399" stroke-width="1.2"/>
+      <text x="202" y="11" fill="#e2e8f0">Apps &amp; Agents</text>
+
+      <rect x="360" y="0" width="14" height="14" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1.2"/>
+      <text x="382" y="11" fill="#e2e8f0">Plugins &amp; Tools</text>
+
+      <rect x="540" y="0" width="14" height="14" rx="3" fill="rgba(120, 53, 15, 0.6)" stroke="#fbbf24" stroke-width="1.2"/>
+      <text x="562" y="11" fill="#e2e8f0">Knowledge</text>
+
+      <rect x="700" y="0" width="14" height="14" rx="3" fill="rgba(136, 19, 55, 0.6)" stroke="#fb7185" stroke-width="1.2"/>
+      <text x="722" y="11" fill="#e2e8f0">Models &amp; MCP</text>
+
+      <rect x="880" y="0" width="14" height="14" rx="3" fill="rgba(154, 52, 18, 0.6)" stroke="#fb923c" stroke-width="1.2"/>
+      <text x="902" y="11" fill="#e2e8f0">Evaluation</text>
+
+      <rect x="1020" y="0" width="14" height="14" rx="3" fill="rgba(30, 41, 59, 1)" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="1042" y="11" fill="#e2e8f0">Prompts</text>
+    </g>
+
+    <!-- Row 2: schema container -->
+    <g transform="translate(20, 80)" font-size="10">
+      <rect x="0" y="0" width="40" height="14" rx="3" fill="rgba(15,23,42,0.55)" stroke="#475569" stroke-width="1.2" stroke-dasharray="3,2"/>
+      <text x="50" y="11" fill="#e2e8f0">Dashed container groups tables by MySQL schema (agentscope / admin)</text>
+    </g>
+
+    <!-- Row 3: markers -->
+    <g transform="translate(20, 110)" font-size="10">
+      <text x="0" y="11" fill="#fde68a" font-weight="700">PK</text>
+      <text x="26" y="11" fill="#e2e8f0">Primary key</text>
+
+      <text x="140" y="11" fill="#94a3b8" font-weight="700">UQ</text>
+      <text x="166" y="11" fill="#e2e8f0">Unique column</text>
+
+      <text x="290" y="11" fill="#a78bfa" font-weight="700">FK</text>
+      <text x="316" y="11" fill="#e2e8f0">Foreign-key column (declared or logical)</text>
+
+      <g transform="translate(620, 0)">
+        <rect x="0" y="-1" width="28" height="14" rx="2" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="0.8"/>
+        <text x="14" y="9" fill="#ede9fe" font-size="8" font-weight="700" text-anchor="middle">ws</text>
+        <text x="36" y="11" fill="#e2e8f0">Carries workspace_id (logical FK to workspace; arrow omitted to keep the diagram clean — see ws? for optional)</text>
+      </g>
+    </g>
+
+    <!-- Row 4: arrow types -->
+    <g transform="translate(20, 148)" font-size="10">
+      <line x1="0" y1="6" x2="60" y2="6" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#fk-arrow)"/>
+      <rect x="22" y="-7" width="22" height="14" rx="3" fill="#020617" stroke="#a78bfa" stroke-width="0.8"/>
+      <text x="33" y="3" fill="#ede9fe" font-size="9" font-weight="700" text-anchor="middle">1:N</text>
+      <text x="80" y="10" fill="#e2e8f0">Declared SQL FK (ON DELETE CASCADE) · one parent ↔ many children</text>
+
+      <line x1="640" y1="6" x2="700" y2="6" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5,4" marker-end="url(#logical-arrow)"/>
+      <rect x="662" y="-7" width="22" height="14" rx="3" fill="#020617" stroke="#475569" stroke-width="0.6"/>
+      <text x="673" y="3" fill="#cbd5e1" font-size="9" font-weight="700" text-anchor="middle">1:N</text>
+      <text x="720" y="10" fill="#e2e8f0">Logical FK by business id (joined in code, not enforced by DB)</text>
+    </g>
+
+    <!-- Row 5: notes -->
+    <g transform="translate(20, 188)" font-size="9" fill="#94a3b8">
+      <text y="0">Direction convention: arrows point from parent (the "1" side) toward child (the "N" side). The arrowhead lands on the FK-holding table.</text>
+      <text y="14">Hub scoping: 11 agentscope tables carry workspace_id but only the application/application_component links are drawn explicitly; all others are marked with the "ws" badge to avoid arrow clutter.</text>
+      <text y="28">Supporting tables omitted from this diagram (described in data-model.md): api_key, reference, prompt_build_template, evaluator_template, model_config; plus the in-code LimitEntity value object.</text>
+      <text y="42">experiment also denormalizes dataset_id (cached alongside dataset_version_id) — the authoritative join is dataset_version → experiment shown here.</text>
+    </g>
+
+    <!-- Row 6: table counts per schema -->
+    <g transform="translate(20, 246)" font-size="10">
+      <text x="0" y="11" fill="#cbd5e1" font-weight="700">schema: agentscope</text>
+      <text x="160" y="11" fill="#94a3b8">13 core tables · account, workspace, application[+version/+component], agent_schema, plugin/tool, knowledge_base/document, provider/model, mcp_server</text>
+      <text x="0" y="28" fill="#cbd5e1" font-weight="700">schema: admin</text>
+      <text x="160" y="28" fill="#94a3b8">9 core tables · prompt[+version], dataset[+version/+item], evaluator[+version], experiment[+result]</text>
+    </g>
+  </g>
+
+</svg>
