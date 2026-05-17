@@ -34,8 +34,10 @@ optional() {
 
 echo ""
 echo "=== Build Tools ==="
-require "Java 17"  "/opt/homebrew/opt/openjdk@17/bin/java --version"
-require "Maven"    "/opt/homebrew/bin/mvn --version"
+require "jenv installed"                 "command -v jenv"
+require "JDK 17 registered with jenv"    "jenv versions --bare 2>/dev/null | grep -qE '^17(\\.|$)'"
+require ".java-version pinned to 17"     "[ -f .java-version ] && grep -qE '^17(\\.|$)' .java-version"
+require "Maven"                          "/opt/homebrew/bin/mvn --version"
 
 echo ""
 echo "=== Node.js (NVM) ==="

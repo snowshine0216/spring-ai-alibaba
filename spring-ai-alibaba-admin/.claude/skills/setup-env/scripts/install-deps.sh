@@ -12,23 +12,50 @@ step() { echo ""; echo "▶ $*"; }
 ok()   { echo "  ✓ $*"; }
 skip() { echo "  · $* (already present)"; }
 
+# ── jenv ───────────────────────────────────────────────────────────────
+# jenv pins per-directory Java versions via a `.java-version` file, so we
+# don't have to mutate the user's shell rc. The project's `.java-version`
+# (committed at the admin root) tells jenv to use 17 inside this tree.
+step "jenv (per-directory JDK manager)"
+if command -v jenv >/dev/null 2>&1; then
+  skip "jenv"
+else
+  brew install jenv
+  ok "jenv installed"
+fi
+
 # ── Java 17 ────────────────────────────────────────────────────────────
 step "Java 17"
-if /opt/homebrew/opt/openjdk@17/bin/java --version >/dev/null 2>&1; then
+JAVA17_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+if [ -x "$JAVA17_HOME/bin/java" ]; then
   skip "openjdk@17"
 else
   brew install openjdk@17
   ok "openjdk@17 installed"
 fi
-# Persist on PATH
-if ! grep -q "openjdk@17" "$HOME/.zshrc" 2>/dev/null; then
-  cat >> "$HOME/.zshrc" <<'EOF'
 
-# Java 17 (Spring AI Alibaba Admin)
-export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
-EOF
-  ok "Added Java 17 to ~/.zshrc"
+# Register openjdk@17 with jenv (idempotent — jenv add is a no-op if already registered)
+if ! jenv versions --bare 2>/dev/null | grep -qE '^17(\.|$)'; then
+  jenv add "$JAVA17_HOME" >/dev/null
+  ok "openjdk@17 registered with jenv"
+else
+  skip "openjdk@17 already registered with jenv"
+fi
+
+# Pin this project to JDK 17 (writes .java-version in the current dir)
+if [ -f .java-version ] && grep -qE '^17(\.|$)' .java-version; then
+  skip ".java-version already pinned to 17"
+else
+  jenv local 17
+  ok "Wrote .java-version (pinned to 17) at $(pwd)"
+fi
+
+# Enable jenv's export plugin so JAVA_HOME tracks the active version
+if jenv plugins 2>/dev/null | grep -q '^export$'; then
+  skip "jenv export plugin already enabled"
+else
+  jenv enable-plugin export >/dev/null
+  ok "Enabled jenv export plugin"
 fi
 
 # ── Maven ───────────────────────────────────────────────────────────────
@@ -122,7 +149,9 @@ fi
 echo ""
 echo "────────────────────────────────────────"
 echo "Install complete. Next steps:"
-echo "  1. source ~/.zshrc  (or open a new terminal)"
+echo "  1. Ensure jenv shims are on PATH (add to your shell rc if not already):"
+echo "       eval \"\$(jenv init -)\""
+echo "     Then open a new terminal — or run \`source ~/.zshrc\` if jenv was just installed."
 echo "  2. .claude/skills/setup-env/scripts/configure-env.sh"
 echo "  3. colima start"
 echo "  4. .claude/skills/setup-env/scripts/start-middleware.sh"

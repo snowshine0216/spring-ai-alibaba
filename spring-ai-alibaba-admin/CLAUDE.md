@@ -33,6 +33,34 @@ cd spring-ai-alibaba-admin-server-start && mvn spring-boot:run -Dspring-boot.run
 
 There is no aggregate test target — tests live only in `spring-ai-alibaba-admin-server-core/src/test/`.
 
+#### Java version (must be 17)
+
+Lombok 1.18.30 — pinned in `pom.xml` — does not support JDK 23+. Maven invoked
+under a newer JDK fails compile with `TypeTag :: UNKNOWN` before any test runs.
+This repo ships a `.java-version` file at the admin root pinning the tree to
+**JDK 17** via [jenv](https://www.jenv.be/).
+
+Recommended path (zero shell-rc mutation):
+
+```bash
+cd spring-ai-alibaba-admin
+jenv local 17        # if needed; the project .java-version already sets this
+mvn -version         # should report `Java version: 17.x.x` — if it reports 25/23, see below
+```
+
+If `jenv` is missing on PATH inside an existing shell, run
+`source ~/.zshrc` (so Homebrew's jenv shims load) or open a new terminal. If
+you don't want to use jenv at all, two equivalent workarounds:
+
+```bash
+export JAVA_HOME="$(/usr/libexec/java_home -v 17)"     # macOS built-in resolver
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"  # Homebrew keg
+```
+
+`make backend-start` and `.claude/skills/setup-env/scripts/start-backend.sh`
+both resolve `JAVA_HOME` from `jenv prefix 17` automatically — they don't
+read your shell rc.
+
 ### Frontend (monorepo at `frontend/`, Umi 4 + React)
 
 **Node 16 is required.** Umi 4's transitive dep `http-deceiver` (via `spdy`, registered by `@umijs/preset-umi/features/esmi`) calls `process.binding('http_parser')` — an internal Node API removed in Node 17+. `umi dev` aborts on startup under Node 18/20/22/24 with `No such module: http_parser`. The repo pins this via `frontend/.nvmrc` (currently `16`); `start-frontend.sh` honors it, and the Makefile's `frontend-start` target should be invoked from a shell with NVM loaded.
