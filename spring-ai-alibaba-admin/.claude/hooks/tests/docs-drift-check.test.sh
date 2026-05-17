@@ -62,6 +62,10 @@ run_test "non-commit command exits 0" \
     '{"tool_input":{"command":"ls -la"}}' \
     0
 
+run_test "git commit with no staged files exits 0" \
+    '{"tool_input":{"command":"git commit -m wip"}}' \
+    0
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
