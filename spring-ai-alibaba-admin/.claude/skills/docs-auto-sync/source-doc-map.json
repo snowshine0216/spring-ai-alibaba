@@ -1,0 +1,33 @@
+{
+  "docs/api-list.md": {
+    "globs": [
+      "**/src/main/java/**/*Controller.java",
+      "**/src/main/java/**/controller/**/*.java"
+    ],
+    "regenRecipe": "regen/api-list.md"
+  },
+  "docs/data-model.md": {
+    "globs": [
+      "docker/middleware/init/mysql/*.sql",
+      "**/src/main/java/**/entity/**/*.java",
+      "**/src/main/java/**/*Entity.java"
+    ],
+    "regenRecipe": "regen/data-model.md",
+    "alsoRegen": ["docs/data-model.html"]
+  },
+  "docs/module-dependency.html": {
+    "globs": [
+      "pom.xml",
+      "spring-ai-alibaba-admin-*/pom.xml"
+    ],
+    "regenRecipe": "regen/module-dependency.md"
+  },
+  "docs/external-dependency.html": {
+    "globs": [
+      "**/pom.xml",
+      "**/application*.yml",
+      "**/application*.yaml"
+    ],
+    "regenRecipe": "regen/external-dependency.md"
+  }
+}
