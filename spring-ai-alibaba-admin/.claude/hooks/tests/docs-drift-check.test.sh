@@ -66,6 +66,16 @@ run_test "git commit with no staged files exits 0" \
     '{"tool_input":{"command":"git commit -m wip"}}' \
     0
 
+export SETUP='
+mkdir -p spring-ai-alibaba-admin-server-start/src/main/java/com/x/controller
+echo "// stub" > spring-ai-alibaba-admin-server-start/src/main/java/com/x/controller/FooController.java
+git add spring-ai-alibaba-admin-server-start/src/main/java/com/x/controller/FooController.java
+'
+run_test "staged controller blocks with api-list.md in stderr" \
+    '{"tool_input":{"command":"git commit -m wip"}}' \
+    2 \
+    "docs/api-list.md"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
