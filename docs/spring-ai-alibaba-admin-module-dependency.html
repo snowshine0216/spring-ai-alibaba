@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba Admin Module Dependency Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 1040px;
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+
+    .card h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .card ul {
+      list-style: none;
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .card li {
+      margin-bottom: 0.375rem;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .toolbar-toggle {
+      background: transparent;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .toolbar-toggle:hover {
+      color: #94a3b8;
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .toolbar-actions {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .toolbar.expanded .toolbar-actions {
+      display: flex;
+    }
+
+    .toolbar-actions button {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .toolbar-actions button:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: white;
+      border-color: #475569;
+    }
+
+    @media print {
+      body { background: #020617; padding: 1rem; }
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba Admin — Module Dependency Diagram</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">Internal modules declared by <code>spring-ai-alibaba-admin/pom.xml</code> · solid arrows mean compile dependencies · dashed arrows mean parent / module membership</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1120 760" role="img" aria-label="Spring AI Alibaba Admin module dependency diagram">
+        <defs>
+          <marker id="parent-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+          </marker>
+          <marker id="compile-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#cbd5e1" />
+          </marker>
+          <marker id="cycle-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Parent/module relationships -->
+        <path d="M 560 112 C 540 150, 470 180, 260 196" fill="none" stroke="#64748b" stroke-width="1.8" stroke-dasharray="6 6" marker-end="url(#parent-arrowhead)" />
+        <path d="M 560 112 C 580 162, 590 196, 590 248" fill="none" stroke="#64748b" stroke-width="1.8" stroke-dasharray="6 6" marker-end="url(#parent-arrowhead)" />
+        <path d="M 560 112 C 620 208, 646 300, 646 396" fill="none" stroke="#64748b" stroke-width="1.8" stroke-dasharray="6 6" marker-end="url(#parent-arrowhead)" />
+        <path d="M 560 112 C 654 248, 700 420, 700 548" fill="none" stroke="#64748b" stroke-width="1.8" stroke-dasharray="6 6" marker-end="url(#parent-arrowhead)" />
+
+        <!-- Compile dependencies: consumer -> dependency -->
+        <path d="M 290 236 C 366 248, 424 260, 470 282" fill="none" stroke="#cbd5e1" stroke-width="2.4" marker-end="url(#compile-arrowhead)" />
+        <path d="M 290 248 C 374 300, 446 344, 524 414" fill="none" stroke="#cbd5e1" stroke-width="2.4" marker-end="url(#compile-arrowhead)" />
+        <path d="M 290 258 C 382 376, 468 472, 578 566" fill="none" stroke="#cbd5e1" stroke-width="2.4" marker-end="url(#compile-arrowhead)" />
+        <path d="M 590 322 C 602 348, 615 370, 630 396" fill="none" stroke="#cbd5e1" stroke-width="2.4" marker-end="url(#compile-arrowhead)" />
+        <path d="M 646 470 C 660 498, 676 520, 694 548" fill="none" stroke="#cbd5e1" stroke-width="2.4" marker-end="url(#compile-arrowhead)" />
+
+        <!-- Parent / aggregate node -->
+        <rect x="360" y="42" width="400" height="70" rx="6" fill="#0f172a" />
+        <rect x="360" y="42" width="400" height="70" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5" />
+        <text x="560" y="68" fill="white" font-size="12" font-weight="700" text-anchor="middle">spring-ai-alibaba-admin</text>
+        <text x="560" y="88" fill="#94a3b8" font-size="9" text-anchor="middle">aggregate POM · packaging=pom · module owner</text>
+
+        <!-- Internal module nodes -->
+        <rect x="80" y="196" width="210" height="72" rx="6" fill="#0f172a" />
+        <rect x="80" y="196" width="210" height="72" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+        <text x="185" y="222" fill="white" font-size="12" font-weight="700" text-anchor="middle">server-start</text>
+        <text x="185" y="242" fill="#94a3b8" font-size="9" text-anchor="middle">Boot application entrypoint</text>
+
+        <rect x="470" y="250" width="240" height="72" rx="6" fill="#0f172a" />
+        <rect x="470" y="250" width="240" height="72" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="590" y="276" fill="white" font-size="12" font-weight="700" text-anchor="middle">server-openapi</text>
+        <text x="590" y="296" fill="#94a3b8" font-size="9" text-anchor="middle">Admin REST API surface</text>
+
+        <rect x="526" y="398" width="240" height="72" rx="6" fill="#0f172a" />
+        <rect x="526" y="398" width="240" height="72" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+        <text x="646" y="424" fill="white" font-size="12" font-weight="700" text-anchor="middle">server-core</text>
+        <text x="646" y="444" fill="#94a3b8" font-size="9" text-anchor="middle">Shared admin services</text>
+
+        <rect x="580" y="550" width="240" height="72" rx="6" fill="#0f172a" />
+        <rect x="580" y="550" width="240" height="72" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="700" y="576" fill="white" font-size="12" font-weight="700" text-anchor="middle">server-runtime</text>
+        <text x="700" y="596" fill="#94a3b8" font-size="9" text-anchor="middle">Runtime model / execution base</text>
+
+        <!-- Legend -->
+        <rect x="824" y="180" width="228" height="132" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.2" />
+        <text x="850" y="206" fill="white" font-size="11" font-weight="700">Legend</text>
+        <line x1="850" y1="230" x2="912" y2="230" stroke="#64748b" stroke-width="1.8" stroke-dasharray="6 6" marker-end="url(#parent-arrowhead)" />
+        <text x="928" y="234" fill="#94a3b8" font-size="9">parent / module</text>
+        <line x1="850" y1="258" x2="912" y2="258" stroke="#cbd5e1" stroke-width="2.4" marker-end="url(#compile-arrowhead)" />
+        <text x="928" y="262" fill="#94a3b8" font-size="9">compile dependency</text>
+        <line x1="850" y1="286" x2="912" y2="286" stroke="#ef4444" stroke-width="2.4" marker-end="url(#cycle-arrowhead)" />
+        <text x="928" y="290" fill="#94a3b8" font-size="9">circular dependency</text>
+
+        <!-- Cycle status -->
+        <rect x="824" y="338" width="228" height="96" rx="10" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.2" />
+        <text x="938" y="366" fill="#34d399" font-size="11" font-weight="700" text-anchor="middle">Cycle status</text>
+        <text x="938" y="390" fill="white" font-size="12" font-weight="700" text-anchor="middle">No circular dependencies</text>
+        <text x="938" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">4 modules · 5 direct edges · clean DAG</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Scope</h3>
+        </div>
+        <ul>
+          <li>• Source aggregate: spring-ai-alibaba-admin/pom.xml</li>
+          <li>• Included only internal admin modules</li>
+          <li>• External libraries intentionally omitted</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Direct dependencies</h3>
+        </div>
+        <ul>
+          <li>• start → openapi, core, runtime</li>
+          <li>• openapi → core</li>
+          <li>• core → runtime</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Reading guide</h3>
+        </div>
+        <ul>
+          <li>• Consumers sit above dependencies</li>
+          <li>• Dashed arrows show module membership only</li>
+          <li>• Red is reserved for cycles; none detected</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">Generated from the aggregate POM plus direct child-module dependency declarations under spring-ai-alibaba-admin/</div>
+  </div>
+
+  <script>
+    function captureOptions() {
+      const report = document.getElementById('report-container');
+      const rect = report.getBoundingClientRect();
+      return {
+        x: Math.max(rect.left - 32, 0),
+        y: Math.max(rect.top - 32, 0),
+        width: rect.width + 64,
+        height: rect.height + 64,
+        scale: 2,
+        backgroundColor: '#020617',
+        useCORS: true,
+        ignoreElements: (element) => element.classList && element.classList.contains('toolbar')
+      };
+    }
+
+    async function renderCanvas() {
+      return html2canvas(document.body, captureOptions());
+    }
+
+    async function copyAsImage(button) {
+      const canvas = await renderCanvas();
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        const original = button.textContent;
+        button.textContent = '✅ Copied';
+        setTimeout(() => button.textContent = original, 1200);
+      }, 'image/png');
+    }
+
+    async function downloadPNG(button) {
+      const canvas = await renderCanvas();
+      const link = document.createElement('a');
+      link.download = 'spring-ai-alibaba-admin-module-dependency.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      const original = button.textContent;
+      button.textContent = '✅ Saved';
+      setTimeout(() => button.textContent = original, 1200);
+    }
+
+    async function downloadPDF(button) {
+      const canvas = await renderCanvas();
+      const image = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(image, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('spring-ai-alibaba-admin-module-dependency.pdf');
+      const original = button.textContent;
+      button.textContent = '✅ Saved';
+      setTimeout(() => button.textContent = original, 1200);
+    }
+  </script>
+</body>
+</html>

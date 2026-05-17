@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba — Technical Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1600px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15,23,42,0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1400px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .card { background: rgba(15,23,42,0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card-dot.orange { background: #fb923c; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+    .toolbar { display: flex; gap: 0.5rem; margin-left: auto; flex-shrink: 0; align-items: center; }
+    .toolbar-toggle { background: transparent; border: none; color: #475569; cursor: pointer; font-size: 1.25rem; line-height: 1; padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: color 0.2s, background 0.2s; }
+    .toolbar-toggle:hover { color: #94a3b8; background: rgba(30,41,59,0.5); }
+    .toolbar-actions { display: none; gap: 0.5rem; }
+    .toolbar.expanded .toolbar-actions { display: flex; }
+    .toolbar-actions button { background: rgba(30,41,59,0.8); border: 1px solid #334155; color: #94a3b8; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-family: inherit; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .toolbar-actions button:hover { background: rgba(51,65,85,0.8); color: white; border-color: #475569; }
+    @media print { body { background: #020617; padding: 1rem; } .toolbar { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba — Technical Architecture</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">Whole-repo · Technical profile · Java 17 · Spring Boot 3.5.x (admin 3.3.6) · Spring AI 1.1.x</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1500 1200">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+          </marker>
+          <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+          </marker>
+          <marker id="arrow-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa"/>
+          </marker>
+          <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c"/>
+          </marker>
+          <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+
+        <!-- ===== ACTORS ROW (outside boundary, top) ===== -->
+        <text x="40" y="28" fill="#94a3b8" font-size="10" font-weight="600">ACTORS</text>
+        <rect x="40" y="40" width="150" height="55" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="115" y="62" fill="white" font-size="11" font-weight="600" text-anchor="middle">End User</text>
+        <text x="115" y="78" fill="#94a3b8" font-size="9" text-anchor="middle">Browser · CLI · API client</text>
+
+        <rect x="210" y="40" width="150" height="55" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="285" y="62" fill="white" font-size="11" font-weight="600" text-anchor="middle">Operator</text>
+        <text x="285" y="78" fill="#94a3b8" font-size="9" text-anchor="middle">Admin console UI</text>
+
+        <rect x="380" y="40" width="170" height="55" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="465" y="62" fill="white" font-size="11" font-weight="600" text-anchor="middle">Agent Developer</text>
+        <text x="465" y="78" fill="#94a3b8" font-size="9" text-anchor="middle">Studio · examples · DSL</text>
+
+        <!-- Top-right legend -->
+        <rect x="1130" y="20" width="360" height="90" rx="8" fill="rgba(15,23,42,0.6)" stroke="#334155" stroke-width="1"/>
+        <text x="1145" y="38" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="1145" y="46" width="14" height="9" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="1165" y="53" fill="#94a3b8" font-size="8">Frontend / Examples</text>
+        <rect x="1280" y="46" width="14" height="9" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="1300" y="53" fill="#94a3b8" font-size="8">Backend / Framework</text>
+        <rect x="1145" y="60" width="14" height="9" rx="2" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="1165" y="67" fill="#94a3b8" font-size="8">Starter / BOM</text>
+        <rect x="1280" y="60" width="14" height="9" rx="2" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="1300" y="67" fill="#94a3b8" font-size="8">Datastore</text>
+        <rect x="1145" y="74" width="14" height="9" rx="2" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1"/>
+        <text x="1165" y="81" fill="#94a3b8" font-size="8">Middleware</text>
+        <rect x="1280" y="74" width="14" height="9" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="1300" y="81" fill="#94a3b8" font-size="8">External API</text>
+        <rect x="1145" y="88" width="14" height="9" rx="2" fill="transparent" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="1165" y="95" fill="#94a3b8" font-size="8">Monorepo boundary</text>
+        <rect x="1280" y="88" width="14" height="9" rx="2" fill="transparent" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="1300" y="95" fill="#94a3b8" font-size="8">Module group</text>
+
+        <!-- ===== MONOREPO BOUNDARY ===== -->
+        <rect x="20" y="120" width="1460" height="780" rx="14" fill="rgba(251,191,36,0.04)" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="8,4"/>
+        <text x="40" y="140" fill="#fbbf24" font-size="11" font-weight="600">spring-ai-alibaba monorepo · Java 17 · Apache 2.0 · Maven multi-module</text>
+
+        <!-- ===== ROW 1: EXAMPLES ===== -->
+        <text x="40" y="166" fill="#22d3ee" font-size="10" font-weight="600">EXAMPLES (examples/*)</text>
+
+        <rect x="40" y="178" width="180" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="130" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">chatbot</text>
+        <text x="130" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">Quickstart agent chat</text>
+        <text x="130" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">ReactAgent · DashScope</text>
+        <text x="130" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">:8080 · /chatui</text>
+
+        <rect x="230" y="178" width="180" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="320" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">multimodal</text>
+        <text x="320" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">Image · TTS · vision</text>
+        <text x="320" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">qwen-vl-plus</text>
+        <text x="320" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">:8080 · /api/image</text>
+
+        <rect x="420" y="178" width="180" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="510" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">voice-agent</text>
+        <text x="510" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">Realtime STT → Agent → TTS</text>
+        <text x="510" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">WebSocket (binary audio)</text>
+        <text x="510" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">:8080 · /ws</text>
+
+        <rect x="610" y="178" width="180" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="700" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">deepresearch</text>
+        <text x="700" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">Iterative research agent</text>
+        <text x="700" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">MCP · Jina · graph workflow</text>
+        <text x="700" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">:8080 · /chat</text>
+
+        <rect x="800" y="178" width="280" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="940" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">multiagent-patterns</text>
+        <text x="940" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">pipeline · routing · supervisor · workflow</text>
+        <text x="940" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">subagent · skills · handoffs-single/multi</text>
+        <text x="940" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">8 reference patterns · :8080</text>
+
+        <rect x="1090" y="178" width="180" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1180" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">documentation</text>
+        <text x="1180" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">A2A · remote MCP tools</text>
+        <text x="1180" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">Reference recipes</text>
+        <text x="1180" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">:8080 · /api/a2a</text>
+
+        <rect x="1280" y="178" width="180" height="74" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1370" y="196" fill="white" font-size="11" font-weight="600" text-anchor="middle">agentscope</text>
+        <text x="1370" y="212" fill="#94a3b8" font-size="9" text-anchor="middle">AgentScope handoffs</text>
+        <text x="1370" y="226" fill="#94a3b8" font-size="9" text-anchor="middle">Composite patterns</text>
+        <text x="1370" y="244" fill="#22d3ee" font-size="8" text-anchor="middle">:8080</text>
+
+        <!-- ===== ROW 2: APPLICATION SERVERS ===== -->
+        <text x="40" y="280" fill="#34d399" font-size="10" font-weight="600">APPLICATION SERVERS</text>
+
+        <!-- Studio -->
+        <rect x="40" y="294" width="380" height="116" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="230" y="314" fill="white" font-size="12" font-weight="600" text-anchor="middle">spring-ai-alibaba-studio</text>
+        <text x="230" y="330" fill="#94a3b8" font-size="9" text-anchor="middle">Embeddable chat UI · graph debugger</text>
+        <text x="230" y="346" fill="#94a3b8" font-size="9" text-anchor="middle">Spring Boot 3.5.x + Next.js/React frontend</text>
+        <text x="230" y="362" fill="#94a3b8" font-size="9" text-anchor="middle">/graph-studio/api/** · /run_sse · /resume_sse</text>
+        <text x="230" y="378" fill="#94a3b8" font-size="9" text-anchor="middle">/chatui/index.html · WebSocket · SSE streaming</text>
+        <text x="230" y="400" fill="#34d399" font-size="9" text-anchor="middle">:8080 (embedded or standalone)</text>
+
+        <!-- Admin region (sub-boundary) -->
+        <rect x="450" y="270" width="900" height="380" rx="10" fill="transparent" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="466" y="288" fill="#94a3b8" font-size="9" font-weight="600">spring-ai-alibaba-admin · Spring Boot 3.3.6 · MyBatis-Plus 3.5.9</text>
+
+        <!-- Admin Server Start -->
+        <rect x="470" y="294" width="860" height="116" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="900" y="314" fill="white" font-size="12" font-weight="600" text-anchor="middle">spring-ai-alibaba-admin-server-start</text>
+        <text x="900" y="330" fill="#94a3b8" font-size="9" text-anchor="middle">Boot entrypoint · controllers · auth (JWT/Argon2) · OpenAPI (SpringDoc 2.8)</text>
+        <text x="900" y="346" fill="#94a3b8" font-size="9" text-anchor="middle">/console/v1/** (admin builder · 134 ep) · /api/v1/apps/** (chat/workflow openapi · 5 ep)</text>
+        <text x="900" y="362" fill="#94a3b8" font-size="9" text-anchor="middle">/api/** (platform · datasets · evaluators · prompts · 55 ep)</text>
+        <text x="900" y="378" fill="#94a3b8" font-size="9" text-anchor="middle">/graph-studio/api/** (DSL · generator · 11 ep) · Freemarker · Actuator</text>
+        <text x="900" y="400" fill="#34d399" font-size="9" text-anchor="middle">:8080 · 200+ endpoints · multipart 500MB</text>
+
+        <!-- Admin sub-modules -->
+        <rect x="470" y="430" width="280" height="92" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="610" y="450" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-admin-server-core</text>
+        <text x="610" y="466" fill="#94a3b8" font-size="9" text-anchor="middle">Service layer · DAL</text>
+        <text x="610" y="480" fill="#94a3b8" font-size="9" text-anchor="middle">MyBatis-Plus · JPA · Druid</text>
+        <text x="610" y="494" fill="#94a3b8" font-size="9" text-anchor="middle">Domain: app, plugin, tool, kb, mcp,</text>
+        <text x="610" y="508" fill="#94a3b8" font-size="9" text-anchor="middle">provider, prompt, evaluator</text>
+
+        <rect x="760" y="430" width="280" height="92" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="900" y="450" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-admin-server-runtime</text>
+        <text x="900" y="466" fill="#94a3b8" font-size="9" text-anchor="middle">Runtime domain types</text>
+        <text x="900" y="480" fill="#94a3b8" font-size="9" text-anchor="middle">Chat sessions (ConcurrentHashMap,</text>
+        <text x="900" y="494" fill="#94a3b8" font-size="9" text-anchor="middle">30-min idle)</text>
+        <text x="900" y="508" fill="#94a3b8" font-size="9" text-anchor="middle">Execution context</text>
+
+        <rect x="1050" y="430" width="280" height="92" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="1190" y="450" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-admin-server-openapi</text>
+        <text x="1190" y="466" fill="#94a3b8" font-size="9" text-anchor="middle">External chat/workflow OpenAPI</text>
+        <text x="1190" y="480" fill="#94a3b8" font-size="9" text-anchor="middle">Streaming · async completions</text>
+        <text x="1190" y="494" fill="#94a3b8" font-size="9" text-anchor="middle">5 endpoints · API key auth</text>
+
+        <!-- ===== ROW 3: FRAMEWORK LIBRARIES ===== -->
+        <text x="40" y="540" fill="#34d399" font-size="10" font-weight="600">FRAMEWORK LIBRARIES (jar)</text>
+
+        <rect x="40" y="554" width="380" height="110" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="230" y="574" fill="white" font-size="12" font-weight="600" text-anchor="middle">spring-ai-alibaba-graph-core</text>
+        <text x="230" y="590" fill="#94a3b8" font-size="9" text-anchor="middle">Stateful graph runtime · checkpointing</text>
+        <text x="230" y="604" fill="#94a3b8" font-size="9" text-anchor="middle">Conditional routing · parallel exec · HITL</text>
+        <text x="230" y="618" fill="#94a3b8" font-size="9" text-anchor="middle">Persistence: PG · MySQL · Oracle · Mongo · Redis · File</text>
+        <text x="230" y="632" fill="#94a3b8" font-size="9" text-anchor="middle">Spring AI core/client-chat/rag/retry/advisors</text>
+        <text x="230" y="646" fill="#94a3b8" font-size="9" text-anchor="middle">PlantUML/Mermaid export · Jackson · JGraphT</text>
+
+        <rect x="440" y="554" width="380" height="110" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="630" y="574" fill="white" font-size="12" font-weight="600" text-anchor="middle">spring-ai-alibaba-agent-framework</text>
+        <text x="630" y="590" fill="#94a3b8" font-size="9" text-anchor="middle">High-level patterns: SequentialAgent, ParallelAgent,</text>
+        <text x="630" y="604" fill="#94a3b8" font-size="9" text-anchor="middle">RoutingAgent, LoopAgent, ReactAgent</text>
+        <text x="630" y="618" fill="#94a3b8" font-size="9" text-anchor="middle">Context engineering · planning · compaction</text>
+        <text x="630" y="632" fill="#94a3b8" font-size="9" text-anchor="middle">A2A SDK 0.2.5 · MCP 0.14 · HttpClient 4/5</text>
+        <text x="630" y="646" fill="#94a3b8" font-size="9" text-anchor="middle">Flexmark HTML→MD · GraalVM Polyglot</text>
+
+        <rect x="840" y="554" width="240" height="110" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="960" y="574" fill="white" font-size="12" font-weight="600" text-anchor="middle">spring-ai-alibaba-sandbox</text>
+        <text x="960" y="590" fill="#94a3b8" font-size="9" text-anchor="middle">Code execution sandbox</text>
+        <text x="960" y="604" fill="#94a3b8" font-size="9" text-anchor="middle">AgentScope Runtime Sandbox 1.0.2</text>
+        <text x="960" y="618" fill="#94a3b8" font-size="9" text-anchor="middle">Vertex isolation</text>
+        <text x="960" y="632" fill="#94a3b8" font-size="9" text-anchor="middle">Python/JS via GraalVM</text>
+        <text x="960" y="646" fill="#94a3b8" font-size="9" text-anchor="middle">Built-in tools for agents</text>
+
+        <!-- BOM tile -->
+        <rect x="1100" y="554" width="230" height="110" rx="8" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="1215" y="574" fill="white" font-size="12" font-weight="600" text-anchor="middle">spring-ai-alibaba-bom</text>
+        <text x="1215" y="590" fill="#94a3b8" font-size="9" text-anchor="middle">Bill of Materials (pom)</text>
+        <text x="1215" y="604" fill="#94a3b8" font-size="9" text-anchor="middle">Spring AI 1.1.2 · DashScope 2.15.1</text>
+        <text x="1215" y="618" fill="#94a3b8" font-size="9" text-anchor="middle">Nacos 3.1 · MCP 0.14 · A2A 0.2.5</text>
+        <text x="1215" y="632" fill="#94a3b8" font-size="9" text-anchor="middle">OTel 1.38 · Jackson 2.18</text>
+        <text x="1215" y="646" fill="#94a3b8" font-size="9" text-anchor="middle">Version coordination for all modules</text>
+
+        <!-- ===== ROW 4: STARTERS ===== -->
+        <text x="40" y="690" fill="#fbbf24" font-size="10" font-weight="600">SPRING BOOT STARTERS (spring-boot-starters/*)</text>
+
+        <rect x="40" y="704" width="310" height="92" rx="8" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="195" y="724" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-starter-a2a-nacos</text>
+        <text x="195" y="740" fill="#94a3b8" font-size="9" text-anchor="middle">Agent-to-Agent over Nacos discovery</text>
+        <text x="195" y="754" fill="#94a3b8" font-size="9" text-anchor="middle">A2A SDK 0.2.5.Beta2 · Nacos client</text>
+        <text x="195" y="770" fill="#94a3b8" font-size="9" text-anchor="middle">Distributed agent registration & RPC</text>
+        <text x="195" y="786" fill="#fbbf24" font-size="9" text-anchor="middle">depends on: agent-framework</text>
+
+        <rect x="370" y="704" width="310" height="92" rx="8" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="525" y="724" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-starter-config-nacos</text>
+        <text x="525" y="740" fill="#94a3b8" font-size="9" text-anchor="middle">Dynamic prompt / tool / model config</text>
+        <text x="525" y="754" fill="#94a3b8" font-size="9" text-anchor="middle">Nacos 3.1 maintainer-client</text>
+        <text x="525" y="770" fill="#94a3b8" font-size="9" text-anchor="middle">Hot-reload without redeploy</text>
+        <text x="525" y="786" fill="#fbbf24" font-size="9" text-anchor="middle">depends on: agent-framework</text>
+
+        <rect x="700" y="704" width="310" height="92" rx="8" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="855" y="724" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-starter-graph-observation</text>
+        <text x="855" y="740" fill="#94a3b8" font-size="9" text-anchor="middle">OTel tracing for graph node execution</text>
+        <text x="855" y="754" fill="#94a3b8" font-size="9" text-anchor="middle">OpenTelemetry 1.38 · Micrometer · OTLP</text>
+        <text x="855" y="770" fill="#94a3b8" font-size="9" text-anchor="middle">Spans: entry/exit · tool calls · state</text>
+        <text x="855" y="786" fill="#fbbf24" font-size="9" text-anchor="middle">depends on: graph-core</text>
+
+        <rect x="1030" y="704" width="300" height="92" rx="8" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="1180" y="724" fill="white" font-size="11" font-weight="600" text-anchor="middle">spring-ai-alibaba-starter-builtin-nodes</text>
+        <text x="1180" y="740" fill="#94a3b8" font-size="9" text-anchor="middle">Drop-in graph nodes</text>
+        <text x="1180" y="754" fill="#94a3b8" font-size="9" text-anchor="middle">ChatModel · Tool · Routing · Loop · Subgraph</text>
+        <text x="1180" y="770" fill="#94a3b8" font-size="9" text-anchor="middle">Reusable building blocks</text>
+        <text x="1180" y="786" fill="#fbbf24" font-size="9" text-anchor="middle">depends on: graph-core</text>
+
+        <!-- Footer note inside monorepo boundary -->
+        <text x="40" y="850" fill="#475569" font-size="9">Build: ./mvnw -B package -DskipTests=true · JDK 17 · Maven 3.6+ · Apache 2.0 license header required</text>
+        <text x="40" y="864" fill="#475569" font-size="9">Module count: 14 internal artifacts (1 BOM · 3 framework · 4 starters · 1 studio · 5 admin) + examples/*</text>
+
+        <!-- ===== ROW 5: DATA STORES (outside monorepo, below) ===== -->
+        <text x="40" y="930" fill="#a78bfa" font-size="10" font-weight="600">DATA STORES (admin: required · graph-core: pluggable)</text>
+
+        <rect x="40" y="944" width="170" height="106" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="125" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">MySQL</text>
+        <text x="125" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">9.x · Druid pool</text>
+        <text x="125" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">admin OLTP · 27 tables</text>
+        <text x="125" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">agentscope-schema</text>
+        <text x="125" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">admin-schema</text>
+        <text x="125" y="1040" fill="#a78bfa" font-size="8" text-anchor="middle">JPA + MyBatis-Plus</text>
+
+        <rect x="220" y="944" width="170" height="106" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="305" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">Redis</text>
+        <text x="305" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">Redisson 3.42</text>
+        <text x="305" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">Session · cache</text>
+        <text x="305" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">Optional graph</text>
+        <text x="305" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">checkpoint saver</text>
+        <text x="305" y="1040" fill="#a78bfa" font-size="8" text-anchor="middle">spring.data.redis</text>
+
+        <rect x="400" y="944" width="170" height="106" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="485" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">Elasticsearch</text>
+        <text x="485" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">elasticsearch-java</text>
+        <text x="485" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">Vector store (RAG)</text>
+        <text x="485" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">Knowledge base</text>
+        <text x="485" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">document chunks</text>
+        <text x="485" y="1040" fill="#a78bfa" font-size="8" text-anchor="middle">spring.elasticsearch.uris</text>
+
+        <rect x="580" y="944" width="250" height="106" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="705" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">Graph Persistence (pluggable)</text>
+        <text x="705" y="982" fill="#94a3b8" font-size="9" text-anchor="middle">• PostgreSQL 42.4 (jsonb checkpoint)</text>
+        <text x="705" y="996" fill="#94a3b8" font-size="9" text-anchor="middle">• Oracle JDBC 23.9</text>
+        <text x="705" y="1010" fill="#94a3b8" font-size="9" text-anchor="middle">• MongoDB driver-sync</text>
+        <text x="705" y="1024" fill="#94a3b8" font-size="9" text-anchor="middle">• File-based · In-memory · H2</text>
+        <text x="705" y="1042" fill="#a78bfa" font-size="8" text-anchor="middle">graph-core checkpoint savers</text>
+
+        <!-- ===== ROW 5b: MIDDLEWARE ===== -->
+        <text x="850" y="930" fill="#fb923c" font-size="10" font-weight="600">MIDDLEWARE</text>
+
+        <rect x="850" y="944" width="160" height="106" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="930" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">Nacos</text>
+        <text x="930" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">3.1.0</text>
+        <text x="930" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">Config center</text>
+        <text x="930" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">Service discovery</text>
+        <text x="930" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">A2A registry</text>
+        <text x="930" y="1040" fill="#fb923c" font-size="8" text-anchor="middle">nacos.server-addr</text>
+
+        <rect x="1020" y="944" width="160" height="106" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="1100" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">Aliyun OSS</text>
+        <text x="1100" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">aliyun-sdk-oss</text>
+        <text x="1100" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">Document files</text>
+        <text x="1100" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">User uploads</text>
+        <text x="1100" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">multipart 500 MB</text>
+        <text x="1100" y="1040" fill="#fb923c" font-size="8" text-anchor="middle">S3-compatible</text>
+
+        <rect x="1190" y="944" width="160" height="106" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="1270" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">RocketMQ</text>
+        <text x="1270" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">5.0.7</text>
+        <text x="1270" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">Async document</text>
+        <text x="1270" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">indexing pipeline</text>
+        <text x="1270" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">topic: saa_studio_</text>
+        <text x="1270" y="1040" fill="#fb923c" font-size="8" text-anchor="middle">document_index</text>
+
+        <rect x="1360" y="944" width="120" height="106" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="1420" y="964" fill="white" font-size="11" font-weight="600" text-anchor="middle">OTLP</text>
+        <text x="1420" y="980" fill="#94a3b8" font-size="9" text-anchor="middle">Collector</text>
+        <text x="1420" y="994" fill="#94a3b8" font-size="9" text-anchor="middle">gRPC export</text>
+        <text x="1420" y="1008" fill="#94a3b8" font-size="9" text-anchor="middle">Jaeger / ARMS</text>
+        <text x="1420" y="1022" fill="#94a3b8" font-size="9" text-anchor="middle">/ Datadog</text>
+        <text x="1420" y="1040" fill="#fb923c" font-size="8" text-anchor="middle">tracing 100%</text>
+
+        <!-- ===== ROW 6: EXTERNAL APIs ===== -->
+        <text x="40" y="1090" fill="#22d3ee" font-size="10" font-weight="600">EXTERNAL APIs (model providers · tool servers)</text>
+
+        <rect x="40" y="1104" width="240" height="78" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="160" y="1122" fill="white" font-size="11" font-weight="600" text-anchor="middle">Alibaba DashScope</text>
+        <text x="160" y="1138" fill="#94a3b8" font-size="9" text-anchor="middle">dashscope-sdk-java 2.15.1</text>
+        <text x="160" y="1152" fill="#94a3b8" font-size="9" text-anchor="middle">Qwen chat · embeddings · vision</text>
+        <text x="160" y="1166" fill="#94a3b8" font-size="9" text-anchor="middle">qwen-vl-plus · TTS · realtime ASR</text>
+
+        <rect x="290" y="1104" width="240" height="78" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="410" y="1122" fill="white" font-size="11" font-weight="600" text-anchor="middle">OpenAI · Anthropic · DeepSeek</text>
+        <text x="410" y="1138" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-openai</text>
+        <text x="410" y="1152" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-anthropic</text>
+        <text x="410" y="1166" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-deepseek</text>
+
+        <rect x="540" y="1104" width="190" height="78" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="635" y="1122" fill="white" font-size="11" font-weight="600" text-anchor="middle">Ollama</text>
+        <text x="635" y="1138" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-ollama</text>
+        <text x="635" y="1152" fill="#94a3b8" font-size="9" text-anchor="middle">Local inference HTTP</text>
+        <text x="635" y="1166" fill="#94a3b8" font-size="9" text-anchor="middle">Pluggable model provider</text>
+
+        <rect x="740" y="1104" width="270" height="78" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="875" y="1122" fill="white" font-size="11" font-weight="600" text-anchor="middle">MCP Servers (Model Context Protocol)</text>
+        <text x="875" y="1138" fill="#94a3b8" font-size="9" text-anchor="middle">mcp-sdk 0.14.0 · JSON-RPC stdio/HTTP</text>
+        <text x="875" y="1152" fill="#94a3b8" font-size="9" text-anchor="middle">Jina Reader (mcp.jina.ai) · search · tools</text>
+        <text x="875" y="1166" fill="#94a3b8" font-size="9" text-anchor="middle">Streamable HTTP connections</text>
+
+        <rect x="1020" y="1104" width="240" height="78" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1140" y="1122" fill="white" font-size="11" font-weight="600" text-anchor="middle">Remote A2A peers</text>
+        <text x="1140" y="1138" fill="#94a3b8" font-size="9" text-anchor="middle">A2A SDK 0.2.5.Beta2</text>
+        <text x="1140" y="1152" fill="#94a3b8" font-size="9" text-anchor="middle">Inter-agent RPC</text>
+        <text x="1140" y="1166" fill="#94a3b8" font-size="9" text-anchor="middle">Discovered via Nacos</text>
+
+        <rect x="1270" y="1104" width="210" height="78" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1375" y="1122" fill="white" font-size="11" font-weight="600" text-anchor="middle">ZhipuAI · Alibaba Models</text>
+        <text x="1375" y="1138" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-zhipuai</text>
+        <text x="1375" y="1152" fill="#94a3b8" font-size="9" text-anchor="middle">Additional providers via BOM</text>
+        <text x="1375" y="1166" fill="#94a3b8" font-size="9" text-anchor="middle">Hot-swappable in agent config</text>
+
+        <!-- ===== ARROWS — primary data flow ===== -->
+        <!-- Actors to applications -->
+        <line x1="115" y1="96" x2="115" y2="174" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)" opacity="0.7"/>
+        <line x1="285" y1="96" x2="700" y2="290" stroke="#fb7185" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrowhead)" opacity="0.7"/>
+        <line x1="465" y1="96" x2="230" y2="290" stroke="#fb7185" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrowhead)" opacity="0.7"/>
+
+        <!-- Examples to Studio / Admin -->
+        <line x1="320" y1="252" x2="230" y2="290" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.5"/>
+        <line x1="940" y1="252" x2="900" y2="290" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.5"/>
+
+        <!-- Admin Start to sub-modules -->
+        <line x1="700" y1="410" x2="610" y2="430" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.6"/>
+        <line x1="900" y1="410" x2="900" y2="430" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.6"/>
+        <line x1="1100" y1="410" x2="1190" y2="430" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.6"/>
+
+        <!-- Studio + Admin core to Framework -->
+        <line x1="230" y1="410" x2="230" y2="554" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)" opacity="0.7"/>
+        <text x="245" y="490" fill="#94a3b8" font-size="8">uses</text>
+
+        <line x1="610" y1="522" x2="630" y2="554" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)" opacity="0.7"/>
+        <line x1="1190" y1="522" x2="960" y2="554" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.5"/>
+
+        <!-- agent-framework to graph-core -->
+        <line x1="510" y1="610" x2="420" y2="610" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)" opacity="0.85"/>
+        <text x="465" y="604" fill="#94a3b8" font-size="8" text-anchor="middle">depends on</text>
+
+        <!-- sandbox to graph-core -->
+        <line x1="840" y1="640" x2="420" y2="640" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)" opacity="0.5"/>
+
+        <!-- Starters to libraries -->
+        <line x1="195" y1="704" x2="230" y2="664" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowhead)" opacity="0.6"/>
+        <line x1="525" y1="704" x2="630" y2="664" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowhead)" opacity="0.6"/>
+        <line x1="855" y1="704" x2="320" y2="664" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowhead)" opacity="0.4"/>
+        <line x1="1180" y1="704" x2="350" y2="664" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowhead)" opacity="0.4"/>
+
+        <!-- Admin core to MySQL/Redis/ES/OSS/RMQ -->
+        <line x1="610" y1="522" x2="125" y2="944" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)" opacity="0.55"/>
+        <line x1="610" y1="522" x2="305" y2="944" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow-violet)" opacity="0.45"/>
+        <line x1="610" y1="522" x2="485" y2="944" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow-violet)" opacity="0.45"/>
+        <line x1="900" y1="522" x2="1100" y2="944" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-orange)" opacity="0.45"/>
+        <line x1="900" y1="522" x2="1270" y2="944" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-orange)" opacity="0.45"/>
+
+        <!-- graph-core to pluggable backends -->
+        <line x1="230" y1="664" x2="705" y2="944" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow-violet)" opacity="0.45"/>
+        <text x="500" y="810" fill="#a78bfa" font-size="8">checkpoint savers</text>
+
+        <!-- agent-framework / config-nacos / a2a-nacos to Nacos -->
+        <line x1="195" y1="796" x2="930" y2="944" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-orange)" opacity="0.5"/>
+        <line x1="525" y1="796" x2="930" y2="944" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-orange)" opacity="0.5"/>
+
+        <!-- graph-observation to OTLP -->
+        <line x1="855" y1="796" x2="1420" y2="944" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-orange)" opacity="0.55"/>
+
+        <!-- agent-framework to external APIs -->
+        <line x1="630" y1="664" x2="160" y2="1104" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)" opacity="0.6"/>
+        <line x1="630" y1="664" x2="410" y2="1104" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-cyan)" opacity="0.5"/>
+        <line x1="630" y1="664" x2="635" y2="1104" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-cyan)" opacity="0.4"/>
+        <line x1="630" y1="664" x2="875" y2="1104" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)" opacity="0.6"/>
+        <line x1="195" y1="796" x2="1140" y2="1104" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-cyan)" opacity="0.4"/>
+
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Examples (examples/*)</h3>
+        </div>
+        <ul>
+          <li>• chatbot — quickstart ReactAgent chat</li>
+          <li>• multimodal — vision + TTS via qwen-vl-plus</li>
+          <li>• voice-agent — realtime STT → Agent → TTS over WebSocket</li>
+          <li>• deepresearch — iterative research with MCP / Jina</li>
+          <li>• multiagent-patterns — pipeline · routing · supervisor · workflow · subagent · skills · handoffs ×2</li>
+          <li>• documentation — A2A demo, remote MCP recipes</li>
+          <li>• agentscope/handoffs — AgentScope DSL integration</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Framework &amp; Servers</h3>
+        </div>
+        <ul>
+          <li>• spring-ai-alibaba-graph-core — stateful graph runtime, persistence (PG / MySQL / Oracle / Mongo / Redis / file)</li>
+          <li>• spring-ai-alibaba-agent-framework — built-in patterns (Sequential/Parallel/Routing/Loop/React), A2A, MCP, GraalVM polyglot</li>
+          <li>• spring-ai-alibaba-sandbox — code-execution sandbox (AgentScope Runtime 1.0.2)</li>
+          <li>• spring-ai-alibaba-studio — embedded chat / debug UI · /graph-studio/api/** · /run_sse · /resume_sse</li>
+          <li>• spring-ai-alibaba-admin (Spring Boot 3.3.6) — server-start · server-core · server-runtime · server-openapi</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Spring Boot Starters &amp; BOM</h3>
+        </div>
+        <ul>
+          <li>• starter-a2a-nacos — Agent-to-Agent over Nacos discovery (A2A SDK 0.2.5)</li>
+          <li>• starter-config-nacos — hot-reload of prompts / tools / models (Nacos 3.1)</li>
+          <li>• starter-graph-observation — OpenTelemetry 1.38 spans for graph nodes</li>
+          <li>• starter-builtin-nodes — reusable ChatModel · Tool · Routing · Loop · Subgraph nodes</li>
+          <li>• spring-ai-alibaba-bom — Spring AI 1.1.2 · DashScope 2.15.1 · MCP 0.14 · Jackson 2.18 · OTel 1.38</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Data Stores</h3>
+        </div>
+        <ul>
+          <li>• MySQL 9.x — admin OLTP, 27 tables across agentscope-schema + admin-schema</li>
+          <li>• Redis (Redisson 3.42) — sessions, cache, optional graph checkpoint backend</li>
+          <li>• Elasticsearch — vector store (Knowledge Base / RAG / DocumentChunk)</li>
+          <li>• PostgreSQL · Oracle · MongoDB · File · In-memory — pluggable graph-core checkpoint savers</li>
+          <li>• H2 — test-scope only</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot orange"></div>
+          <h3>Middleware</h3>
+        </div>
+        <ul>
+          <li>• Nacos 3.1 — config center + service discovery (A2A registry)</li>
+          <li>• Aliyun OSS — document &amp; knowledge-base file storage (S3-compatible)</li>
+          <li>• RocketMQ 5.0.7 — async document indexing pipeline (topic: <code>topic_saa_studio_document_index</code>)</li>
+          <li>• OTLP collector — receives tracing/metric export (Jaeger / Aliyun ARMS / Datadog)</li>
+          <li>• Druid 1.2.20 — JDBC connection pool with stat / wall / slf4j filters</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>External APIs</h3>
+        </div>
+        <ul>
+          <li>• Alibaba DashScope — primary model provider (chat, embeddings, vision, TTS, realtime audio)</li>
+          <li>• OpenAI · Anthropic · DeepSeek · ZhipuAI — pluggable via spring-ai-starter-model-*</li>
+          <li>• Ollama — local inference over HTTP</li>
+          <li>• MCP servers (Jina Reader <code>mcp.jina.ai</code>, custom tool servers) — JSON-RPC over stdio / streamable HTTP</li>
+          <li>• Remote A2A peers — distributed agents discovered via Nacos</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Spring AI Alibaba · Technical-profile architecture · Generated 2026-05-16 · Evidence: pom.xml · application.yml · README.md</p>
+  </div>
+
+  <script>
+    async function copyAsImage(btn) {
+      const orig = btn.textContent;
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ Copied!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+
+    async function downloadPNG(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const link = document.createElement('a');
+        link.download = 'architecture-diagram.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '✓ Done!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+
+    async function downloadPDF(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('architecture-diagram.pdf');
+        btn.textContent = '✓ Done!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+  </script>
+</body>
+</html>

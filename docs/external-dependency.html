@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba — External Dependencies</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1500px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15,23,42,0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1300px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .card { background: rgba(15,23,42,0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.orange { background: #fb923c; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+    .toolbar { display: flex; gap: 0.5rem; margin-left: auto; flex-shrink: 0; align-items: center; }
+    .toolbar-toggle { background: transparent; border: none; color: #475569; cursor: pointer; font-size: 1.25rem; line-height: 1; padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: color 0.2s, background 0.2s; }
+    .toolbar-toggle:hover { color: #94a3b8; background: rgba(30,41,59,0.5); }
+    .toolbar-actions { display: none; gap: 0.5rem; }
+    .toolbar.expanded .toolbar-actions { display: flex; }
+    .toolbar-actions button { background: rgba(30,41,59,0.8); border: 1px solid #334155; color: #94a3b8; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-family: inherit; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .toolbar-actions button:hover { background: rgba(51,65,85,0.8); color: white; border-color: #475569; }
+    @media print { body { background: #020617; padding: 1rem; } .toolbar { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba — External Dependencies</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">Whole-repo · Java project · 3 groups: Key Java Dependencies · Key Middleware · Key External APIs</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1400 1180">
+        <defs>
+          <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+          </marker>
+          <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c"/>
+          </marker>
+          <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+
+        <!-- Project source node (top) -->
+        <rect x="500" y="30" width="400" height="100" rx="10" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="2"/>
+        <text x="700" y="58" fill="white" font-size="13" font-weight="700" text-anchor="middle">spring-ai-alibaba</text>
+        <text x="700" y="78" fill="#94a3b8" font-size="10" text-anchor="middle">Java 17 · Maven multi-module · Apache 2.0</text>
+        <text x="700" y="96" fill="#94a3b8" font-size="9" text-anchor="middle">Framework + Starters + Studio + Admin + Examples</text>
+        <text x="700" y="112" fill="#22d3ee" font-size="9" text-anchor="middle">Version: 1.1.2.2 (core) · 1.0.0.x (admin)</text>
+
+        <!-- Legend top-right -->
+        <rect x="1100" y="20" width="290" height="100" rx="8" fill="rgba(15,23,42,0.6)" stroke="#334155" stroke-width="1"/>
+        <text x="1115" y="38" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="1115" y="46" width="14" height="9" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="1135" y="53" fill="#94a3b8" font-size="8">Key Java Dependencies (build-time / runtime libs)</text>
+        <rect x="1115" y="62" width="14" height="9" rx="2" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1"/>
+        <text x="1135" y="69" fill="#94a3b8" font-size="8">Key Middleware (operator-managed services)</text>
+        <rect x="1115" y="78" width="14" height="9" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="1135" y="85" fill="#94a3b8" font-size="8">Key External APIs (remote network services)</text>
+        <line x1="1115" y1="100" x2="1135" y2="100" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <text x="1140" y="103" fill="#94a3b8" font-size="8">project → dependency group</text>
+
+        <!-- Group 1 boundary: Key Java Dependencies (LEFT) -->
+        <rect x="20" y="170" width="450" height="990" rx="12" fill="rgba(6,78,59,0.06)" stroke="#34d399" stroke-width="1.2" stroke-dasharray="8,4"/>
+        <text x="40" y="194" fill="#34d399" font-size="12" font-weight="700">Key Java Dependencies</text>
+        <text x="40" y="210" fill="#94a3b8" font-size="9">Architecturally meaningful libraries · pom.xml + BOM</text>
+
+        <!-- Spring AI cluster -->
+        <rect x="40" y="230" width="410" height="120" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="250" fill="white" font-size="11" font-weight="600" text-anchor="middle">Spring AI 1.1.2</text>
+        <text x="245" y="268" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-core · spring-ai-commons</text>
+        <text x="245" y="282" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-client-chat · spring-ai-rag</text>
+        <text x="245" y="296" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-advisors-vector-store · spring-ai-retry</text>
+        <text x="245" y="312" fill="#94a3b8" font-size="9" text-anchor="middle">Model starters: openai · anthropic · deepseek</text>
+        <text x="245" y="326" fill="#94a3b8" font-size="9" text-anchor="middle">ollama · zhipuai · dashscope (1.1.2.1)</text>
+        <text x="245" y="342" fill="#34d399" font-size="8" text-anchor="middle">ChatModel / EmbeddingModel / Tool abstractions</text>
+
+        <rect x="40" y="370" width="410" height="100" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="390" fill="white" font-size="11" font-weight="600" text-anchor="middle">Spring Boot 3.5.8 · Spring Framework 6.x</text>
+        <text x="245" y="408" fill="#94a3b8" font-size="9" text-anchor="middle">spring-boot-starter-web · -data-jpa · -actuator</text>
+        <text x="245" y="422" fill="#94a3b8" font-size="9" text-anchor="middle">spring-boot-starter-security · -test</text>
+        <text x="245" y="436" fill="#94a3b8" font-size="9" text-anchor="middle">Admin server: Spring Boot 3.3.6 (slightly older)</text>
+        <text x="245" y="452" fill="#94a3b8" font-size="9" text-anchor="middle">SpringDoc OpenAPI 2.8.8 · Reactor 3.6 · WebFlux</text>
+
+        <rect x="40" y="490" width="410" height="100" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="510" fill="white" font-size="11" font-weight="600" text-anchor="middle">Agent &amp; Protocol SDKs</text>
+        <text x="245" y="528" fill="#94a3b8" font-size="9" text-anchor="middle">MCP SDK 0.14.0 (Model Context Protocol)</text>
+        <text x="245" y="542" fill="#94a3b8" font-size="9" text-anchor="middle">A2A SDK 0.2.5.Beta2 (Agent-to-Agent)</text>
+        <text x="245" y="556" fill="#94a3b8" font-size="9" text-anchor="middle">DashScope SDK Java 2.15.1 (Alibaba)</text>
+        <text x="245" y="572" fill="#94a3b8" font-size="9" text-anchor="middle">AgentScope Runtime Sandbox 1.0.2</text>
+
+        <rect x="40" y="610" width="410" height="100" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="630" fill="white" font-size="11" font-weight="600" text-anchor="middle">Persistence &amp; Data</text>
+        <text x="245" y="648" fill="#94a3b8" font-size="9" text-anchor="middle">MyBatis-Plus 3.5.9 (admin)</text>
+        <text x="245" y="662" fill="#94a3b8" font-size="9" text-anchor="middle">Hibernate / JPA · Druid 1.2.20 (JDBC pool)</text>
+        <text x="245" y="676" fill="#94a3b8" font-size="9" text-anchor="middle">JDBC drivers: MySQL 9.2 · PG 42.4 · Oracle 23.9</text>
+        <text x="245" y="690" fill="#94a3b8" font-size="9" text-anchor="middle">Redisson 3.42 · MongoDB driver-sync · H2 (test)</text>
+
+        <rect x="40" y="730" width="410" height="90" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="750" fill="white" font-size="11" font-weight="600" text-anchor="middle">Polyglot &amp; HTTP</text>
+        <text x="245" y="768" fill="#94a3b8" font-size="9" text-anchor="middle">GraalVM Polyglot 24.2.1 · GraalJS · Nashorn</text>
+        <text x="245" y="782" fill="#94a3b8" font-size="9" text-anchor="middle">Apache HttpClient 4.5.14 / 5.4.3 · OkHttp 4.12</text>
+        <text x="245" y="796" fill="#94a3b8" font-size="9" text-anchor="middle">Project Reactor 3.6 · Netty 4 (via reactor-netty)</text>
+        <text x="245" y="810" fill="#94a3b8" font-size="9" text-anchor="middle">Jackson 2.18 · JSONPath 2.9 · Flexmark 0.64</text>
+
+        <rect x="40" y="840" width="410" height="80" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="860" fill="white" font-size="11" font-weight="600" text-anchor="middle">Security &amp; Tooling</text>
+        <text x="245" y="878" fill="#94a3b8" font-size="9" text-anchor="middle">JJWT 0.12.6 · Argon2-jvm · OGNL</text>
+        <text x="245" y="892" fill="#94a3b8" font-size="9" text-anchor="middle">Lombok 1.18.30 · SLF4J 2.0.17 · Logback 1.5.8</text>
+        <text x="245" y="906" fill="#94a3b8" font-size="9" text-anchor="middle">Guava 33 · Commons-lang3/codec · JGraphT</text>
+
+        <rect x="40" y="940" width="410" height="80" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="960" fill="white" font-size="11" font-weight="600" text-anchor="middle">Observability</text>
+        <text x="245" y="978" fill="#94a3b8" font-size="9" text-anchor="middle">OpenTelemetry 1.38.0 · OTLP exporter (gRPC)</text>
+        <text x="245" y="992" fill="#94a3b8" font-size="9" text-anchor="middle">Micrometer 1.x · micrometer-observation</text>
+        <text x="245" y="1006" fill="#94a3b8" font-size="9" text-anchor="middle">Spring Boot Actuator endpoints</text>
+
+        <rect x="40" y="1040" width="410" height="100" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="1060" fill="white" font-size="11" font-weight="600" text-anchor="middle">Test &amp; Build</text>
+        <text x="245" y="1078" fill="#94a3b8" font-size="9" text-anchor="middle">JUnit 5 · Mockito 5 · Testcontainers 1.21.3</text>
+        <text x="245" y="1092" fill="#94a3b8" font-size="9" text-anchor="middle">(Postgres / MySQL / Oracle containers for graph-core)</text>
+        <text x="245" y="1108" fill="#94a3b8" font-size="9" text-anchor="middle">Spring Initializr 0.22 (admin app generator)</text>
+        <text x="245" y="1124" fill="#94a3b8" font-size="9" text-anchor="middle">Maven 3.6+ · spring-ai-alibaba-bom (version mgmt)</text>
+
+        <!-- Group 2 boundary: Key Middleware (MIDDLE) -->
+        <rect x="490" y="170" width="430" height="990" rx="12" fill="rgba(251,146,60,0.06)" stroke="#fb923c" stroke-width="1.2" stroke-dasharray="8,4"/>
+        <text x="510" y="194" fill="#fb923c" font-size="12" font-weight="700">Key Middleware</text>
+        <text x="510" y="210" fill="#94a3b8" font-size="9">Infrastructure services declared in application.yml</text>
+
+        <rect x="510" y="230" width="390" height="100" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="250" fill="white" font-size="11" font-weight="600" text-anchor="middle">MySQL 9.x</text>
+        <text x="705" y="268" fill="#94a3b8" font-size="9" text-anchor="middle">Admin primary OLTP store</text>
+        <text x="705" y="282" fill="#94a3b8" font-size="9" text-anchor="middle">27 tables across agentscope-schema + admin-schema</text>
+        <text x="705" y="296" fill="#94a3b8" font-size="9" text-anchor="middle">Druid pool with stat / wall / slf4j filters</text>
+        <text x="705" y="312" fill="#fb923c" font-size="9" text-anchor="middle">spring.datasource.url · com.mysql.cj.jdbc.Driver</text>
+
+        <rect x="510" y="350" width="390" height="90" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="370" fill="white" font-size="11" font-weight="600" text-anchor="middle">Redis (Redisson 3.42)</text>
+        <text x="705" y="388" fill="#94a3b8" font-size="9" text-anchor="middle">Session store · admin caches</text>
+        <text x="705" y="402" fill="#94a3b8" font-size="9" text-anchor="middle">Optional graph-core checkpoint backend</text>
+        <text x="705" y="418" fill="#fb923c" font-size="9" text-anchor="middle">spring.data.redis.{host,port,database}</text>
+
+        <rect x="510" y="460" width="390" height="100" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="480" fill="white" font-size="11" font-weight="600" text-anchor="middle">Elasticsearch</text>
+        <text x="705" y="498" fill="#94a3b8" font-size="9" text-anchor="middle">Vector store (RAG / Knowledge Base)</text>
+        <text x="705" y="512" fill="#94a3b8" font-size="9" text-anchor="middle">Document chunks (admin)</text>
+        <text x="705" y="526" fill="#94a3b8" font-size="9" text-anchor="middle">elasticsearch-java + rest-client</text>
+        <text x="705" y="542" fill="#fb923c" font-size="9" text-anchor="middle">spring.elasticsearch.uris</text>
+
+        <rect x="510" y="580" width="390" height="100" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="600" fill="white" font-size="11" font-weight="600" text-anchor="middle">Nacos 3.1.0</text>
+        <text x="705" y="618" fill="#94a3b8" font-size="9" text-anchor="middle">Config center + service discovery</text>
+        <text x="705" y="632" fill="#94a3b8" font-size="9" text-anchor="middle">Dynamic prompt / tool / model config</text>
+        <text x="705" y="646" fill="#94a3b8" font-size="9" text-anchor="middle">A2A peer registry · MSE extensions 1.0.6</text>
+        <text x="705" y="662" fill="#fb923c" font-size="9" text-anchor="middle">starter-a2a-nacos · starter-config-nacos</text>
+
+        <rect x="510" y="700" width="390" height="100" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="720" fill="white" font-size="11" font-weight="600" text-anchor="middle">Aliyun OSS</text>
+        <text x="705" y="738" fill="#94a3b8" font-size="9" text-anchor="middle">Document &amp; knowledge-base file storage</text>
+        <text x="705" y="752" fill="#94a3b8" font-size="9" text-anchor="middle">aliyun-sdk-oss · S3-compatible API</text>
+        <text x="705" y="766" fill="#94a3b8" font-size="9" text-anchor="middle">User uploads · multipart 500 MB</text>
+        <text x="705" y="782" fill="#fb923c" font-size="9" text-anchor="middle">admin-server-core dependency</text>
+
+        <rect x="510" y="820" width="390" height="100" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="840" fill="white" font-size="11" font-weight="600" text-anchor="middle">RocketMQ 5.0.7</text>
+        <text x="705" y="858" fill="#94a3b8" font-size="9" text-anchor="middle">Async message broker</text>
+        <text x="705" y="872" fill="#94a3b8" font-size="9" text-anchor="middle">Document indexing pipeline</text>
+        <text x="705" y="886" fill="#94a3b8" font-size="9" text-anchor="middle">topic: topic_saa_studio_document_index</text>
+        <text x="705" y="902" fill="#fb923c" font-size="9" text-anchor="middle">rocketmq.endpoints (admin yml)</text>
+
+        <rect x="510" y="940" width="390" height="100" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="960" fill="white" font-size="11" font-weight="600" text-anchor="middle">Pluggable Graph Backends</text>
+        <text x="705" y="978" fill="#94a3b8" font-size="9" text-anchor="middle">PostgreSQL 42.4 (jsonb checkpoints)</text>
+        <text x="705" y="992" fill="#94a3b8" font-size="9" text-anchor="middle">Oracle Database 23.9 · MongoDB</text>
+        <text x="705" y="1006" fill="#94a3b8" font-size="9" text-anchor="middle">File-based · In-memory savers</text>
+        <text x="705" y="1022" fill="#fb923c" font-size="9" text-anchor="middle">graph-core optional dependencies</text>
+
+        <rect x="510" y="1060" width="390" height="80" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="705" y="1080" fill="white" font-size="11" font-weight="600" text-anchor="middle">OTLP Collector</text>
+        <text x="705" y="1098" fill="#94a3b8" font-size="9" text-anchor="middle">Receives traces via OpenTelemetry export</text>
+        <text x="705" y="1112" fill="#94a3b8" font-size="9" text-anchor="middle">Operator-deployed (Jaeger / Datadog / ARMS)</text>
+        <text x="705" y="1126" fill="#fb923c" font-size="9" text-anchor="middle">management.otlp.tracing.export.endpoint</text>
+
+        <!-- Group 3 boundary: Key External APIs (RIGHT) -->
+        <rect x="940" y="170" width="440" height="990" rx="12" fill="rgba(8,51,68,0.08)" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="8,4"/>
+        <text x="960" y="194" fill="#22d3ee" font-size="12" font-weight="700">Key External APIs</text>
+        <text x="960" y="210" fill="#94a3b8" font-size="9">Remote SaaS / model-provider / tool servers</text>
+
+        <rect x="960" y="230" width="400" height="120" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="250" fill="white" font-size="11" font-weight="600" text-anchor="middle">Alibaba DashScope (primary)</text>
+        <text x="1160" y="268" fill="#94a3b8" font-size="9" text-anchor="middle">dashscope-sdk-java 2.15.1</text>
+        <text x="1160" y="282" fill="#94a3b8" font-size="9" text-anchor="middle">Qwen chat &amp; embeddings · vision (qwen-vl-plus)</text>
+        <text x="1160" y="296" fill="#94a3b8" font-size="9" text-anchor="middle">TTS · realtime ASR · multimodal</text>
+        <text x="1160" y="310" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-alibaba-starter-dashscope 1.1.2.1</text>
+        <text x="1160" y="326" fill="#22d3ee" font-size="8" text-anchor="middle">examples/multimodal · examples/voice-agent · examples/deepresearch</text>
+        <text x="1160" y="342" fill="#22d3ee" font-size="8" text-anchor="middle">spring.ai.dashscope.api-key</text>
+
+        <rect x="960" y="370" width="400" height="100" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="390" fill="white" font-size="11" font-weight="600" text-anchor="middle">OpenAI</text>
+        <text x="1160" y="408" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-openai 1.1.2</text>
+        <text x="1160" y="422" fill="#94a3b8" font-size="9" text-anchor="middle">GPT chat &amp; embeddings</text>
+        <text x="1160" y="436" fill="#22d3ee" font-size="9" text-anchor="middle">api.openai.com</text>
+        <text x="1160" y="452" fill="#22d3ee" font-size="8" text-anchor="middle">Pluggable provider via admin · agent-framework (test)</text>
+
+        <rect x="960" y="490" width="400" height="90" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="510" fill="white" font-size="11" font-weight="600" text-anchor="middle">Anthropic</text>
+        <text x="1160" y="528" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-anthropic</text>
+        <text x="1160" y="542" fill="#94a3b8" font-size="9" text-anchor="middle">Claude chat models</text>
+        <text x="1160" y="558" fill="#22d3ee" font-size="9" text-anchor="middle">api.anthropic.com</text>
+
+        <rect x="960" y="600" width="400" height="80" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="620" fill="white" font-size="11" font-weight="600" text-anchor="middle">DeepSeek</text>
+        <text x="1160" y="638" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-deepseek</text>
+        <text x="1160" y="652" fill="#94a3b8" font-size="9" text-anchor="middle">Alternative LLM provider</text>
+        <text x="1160" y="668" fill="#22d3ee" font-size="9" text-anchor="middle">api.deepseek.com · admin + agent-framework (test)</text>
+
+        <rect x="960" y="700" width="400" height="80" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="720" fill="white" font-size="11" font-weight="600" text-anchor="middle">Ollama</text>
+        <text x="1160" y="738" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-starter-model-ollama</text>
+        <text x="1160" y="752" fill="#94a3b8" font-size="9" text-anchor="middle">Local inference over HTTP</text>
+        <text x="1160" y="768" fill="#22d3ee" font-size="9" text-anchor="middle">configurable host:port (local or remote)</text>
+
+        <rect x="960" y="800" width="400" height="80" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="820" fill="white" font-size="11" font-weight="600" text-anchor="middle">ZhipuAI</text>
+        <text x="1160" y="838" fill="#94a3b8" font-size="9" text-anchor="middle">spring-ai-zhipuai (transitive via deepseek)</text>
+        <text x="1160" y="852" fill="#94a3b8" font-size="9" text-anchor="middle">Additional Chinese LLM provider</text>
+        <text x="1160" y="868" fill="#22d3ee" font-size="9" text-anchor="middle">api.zhipuai.cn</text>
+
+        <rect x="960" y="900" width="400" height="100" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="920" fill="white" font-size="11" font-weight="600" text-anchor="middle">MCP Servers</text>
+        <text x="1160" y="938" fill="#94a3b8" font-size="9" text-anchor="middle">mcp-sdk 0.14.0 · JSON-RPC over stdio / HTTP</text>
+        <text x="1160" y="952" fill="#94a3b8" font-size="9" text-anchor="middle">Jina Reader (https://mcp.jina.ai)</text>
+        <text x="1160" y="966" fill="#94a3b8" font-size="9" text-anchor="middle">Streamable HTTP connections (custom servers)</text>
+        <text x="1160" y="982" fill="#22d3ee" font-size="9" text-anchor="middle">examples/deepresearch · admin MCP registry</text>
+
+        <rect x="960" y="1020" width="400" height="120" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1160" y="1040" fill="white" font-size="11" font-weight="600" text-anchor="middle">Remote A2A Peers</text>
+        <text x="1160" y="1058" fill="#94a3b8" font-size="9" text-anchor="middle">A2A SDK 0.2.5.Beta2</text>
+        <text x="1160" y="1072" fill="#94a3b8" font-size="9" text-anchor="middle">Inter-agent RPC over network</text>
+        <text x="1160" y="1086" fill="#94a3b8" font-size="9" text-anchor="middle">Discovered via Nacos service registry</text>
+        <text x="1160" y="1100" fill="#22d3ee" font-size="9" text-anchor="middle">starter-a2a-nacos</text>
+        <text x="1160" y="1118" fill="#22d3ee" font-size="8" text-anchor="middle">Distributed multi-agent topologies</text>
+
+        <!-- Arrows from project node to each group boundary -->
+        <line x1="600" y1="130" x2="240" y2="170" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-emerald)"/>
+        <text x="370" y="158" fill="#34d399" font-size="9" font-weight="600">declares</text>
+
+        <line x1="700" y1="130" x2="705" y2="170" stroke="#fb923c" stroke-width="2" marker-end="url(#arrow-orange)"/>
+        <text x="715" y="158" fill="#fb923c" font-size="9" font-weight="600">runs against</text>
+
+        <line x1="800" y1="130" x2="1160" y2="170" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+        <text x="1010" y="158" fill="#22d3ee" font-size="9" font-weight="600">calls over network</text>
+
+        <!-- Footer note -->
+        <text x="20" y="1175" fill="#475569" font-size="8">Evidence: root pom.xml · spring-ai-alibaba-bom/pom.xml · per-module pom.xml · spring-ai-alibaba-admin-server-start/src/main/resources/application*.yml · examples/*/application*.yml</text>
+
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Key Java Dependencies — highlights</h3>
+        </div>
+        <ul>
+          <li>• Spring AI 1.1.2 — core, client-chat, rag, retry, advisors-vector-store</li>
+          <li>• Spring Boot 3.5.8 (core) / 3.3.6 (admin)</li>
+          <li>• DashScope SDK Java 2.15.1</li>
+          <li>• MCP SDK 0.14.0 · A2A SDK 0.2.5.Beta2</li>
+          <li>• MyBatis-Plus 3.5.9 · Druid 1.2.20 · Hibernate / JPA</li>
+          <li>• OpenTelemetry 1.38.0 · Micrometer</li>
+          <li>• GraalVM Polyglot 24.2.1 (Python + JS sandboxes)</li>
+          <li>• Jackson 2.18 · Reactor 3.6 · Apache HttpClient 4.5/5.4 · OkHttp 4.12</li>
+          <li>• JJWT 0.12.6 · Argon2-jvm · Lombok · SLF4J / Logback</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot orange"></div>
+          <h3>Key Middleware — runtime services</h3>
+        </div>
+        <ul>
+          <li>• MySQL 9.x — admin OLTP (27 tables, two schemas)</li>
+          <li>• Redis (Redisson 3.42) — sessions, cache, optional graph saver</li>
+          <li>• Elasticsearch — vector store / knowledge-base chunks</li>
+          <li>• Nacos 3.1.0 — config + service discovery, A2A registry</li>
+          <li>• Aliyun OSS — document storage (S3-compatible)</li>
+          <li>• RocketMQ 5.0.7 — async document indexing pipeline</li>
+          <li>• PostgreSQL · Oracle · MongoDB · File · In-memory — pluggable graph-core backends</li>
+          <li>• OTLP collector — receives traces (Jaeger / Datadog / Aliyun ARMS)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Key External APIs — remote calls</h3>
+        </div>
+        <ul>
+          <li>• Alibaba DashScope — primary model provider (chat, embeddings, vision, TTS, realtime ASR)</li>
+          <li>• OpenAI — GPT chat &amp; embeddings (pluggable)</li>
+          <li>• Anthropic — Claude chat models (pluggable)</li>
+          <li>• DeepSeek — alternative LLM provider</li>
+          <li>• Ollama — local inference over HTTP</li>
+          <li>• ZhipuAI — additional Chinese LLM provider</li>
+          <li>• MCP servers — Jina Reader (<code>mcp.jina.ai</code>) plus custom tool servers over JSON-RPC</li>
+          <li>• Remote A2A peers — discovered via Nacos for distributed agent topologies</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Spring AI Alibaba · External dependencies · Generated 2026-05-16 · Three classifications · Java project</p>
+  </div>
+
+  <script>
+    async function copyAsImage(btn) {
+      const orig = btn.textContent;
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ Copied!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+    async function downloadPNG(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const link = document.createElement('a');
+        link.download = 'external-dependency.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '✓ Done!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+    async function downloadPDF(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('external-dependency.pdf');
+        btn.textContent = '✓ Done!';
+      } catch (e) { btn.textContent = '✗ Failed'; }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba Admin Architecture Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+
+    .container {
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 1280px;
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+
+    .card h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .card ul {
+      list-style: none;
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .card li {
+      margin-bottom: 0.375rem;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .toolbar-toggle {
+      background: transparent;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .toolbar-toggle:hover {
+      color: #94a3b8;
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .toolbar-actions {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .toolbar.expanded .toolbar-actions {
+      display: flex;
+    }
+
+    .toolbar-actions button {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .toolbar-actions button:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: white;
+      border-color: #475569;
+    }
+
+    @media print {
+      body { background: #020617; padding: 1rem; }
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba Admin — Detailed Component Architecture</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">Repo-backed view of the admin console, backend modules, execution core, data plane, and external integrations</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1500 1210" role="img" aria-label="Detailed Spring AI Alibaba Admin architecture diagram">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="event-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c" />
+          </marker>
+          <marker id="trace-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+          <marker id="config-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Flow lines first so they stay behind translucent nodes -->
+        <path d="M 126 168 C 164 168, 184 168, 214 168" fill="none" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowhead)" />
+        <path d="M 402 168 C 470 168, 496 168, 538 168" fill="none" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowhead)" />
+        <path d="M 736 168 C 800 168, 830 168, 866 168" fill="none" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowhead)" />
+        <path d="M 658 246 C 658 272, 658 284, 658 306" fill="none" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowhead)" />
+        <path d="M 470 392 C 470 418, 470 436, 470 456" fill="none" stroke="#64748b" stroke-width="2.1" marker-end="url(#arrowhead)" />
+        <path d="M 658 392 C 628 418, 580 438, 566 456" fill="none" stroke="#64748b" stroke-width="2.1" marker-end="url(#arrowhead)" />
+        <path d="M 848 392 C 838 418, 816 438, 780 456" fill="none" stroke="#64748b" stroke-width="2.1" marker-end="url(#arrowhead)" />
+        <path d="M 1028 392 C 980 418, 932 438, 898 456" fill="none" stroke="#64748b" stroke-width="2.1" marker-end="url(#arrowhead)" />
+        <path d="M 456 546 C 456 580, 456 590, 456 618" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 628 546 C 620 580, 604 594, 596 618" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 806 546 C 820 580, 842 594, 852 618" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 982 546 C 1000 580, 1018 594, 1024 618" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 648 708 C 648 736, 648 748, 648 772" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+
+        <path d="M 456 708 C 430 768, 396 826, 354 882" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 684 708 C 634 770, 578 824, 522 882" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 912 708 C 888 770, 850 824, 760 882" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 912 708 C 920 770, 916 824, 898 882" fill="none" stroke="#fb923c" stroke-width="2.2" marker-end="url(#event-arrowhead)" />
+        <path d="M 470 546 C 552 648, 882 746, 1068 882" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#config-arrowhead)" />
+
+        <path d="M 860 904 C 918 904, 934 904, 972 904" fill="none" stroke="#fb923c" stroke-width="2.2" marker-end="url(#event-arrowhead)" />
+        <path d="M 1188 904 C 1236 904, 1264 904, 1304 904" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+
+        <path d="M 790 663 C 932 642, 1084 356, 1206 312" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 1018 663 C 1112 620, 1164 448, 1206 450" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 1246 663 C 1268 642, 1284 616, 1300 588" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+
+        <path d="M 1142 919 C 1178 900, 1190 844, 1206 744" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#config-arrowhead)" />
+        <path d="M 1323 780 C 1323 800, 1323 804, 1323 812" fill="none" stroke="#fb7185" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#trace-arrowhead)" />
+        <path d="M 1206 856 C 1112 856, 952 928, 804 928" fill="none" stroke="#fb7185" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#trace-arrowhead)" />
+        <path d="M 804 944 C 968 944, 1112 944, 1206 918" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+        <path d="M 842 780 C 680 780, 394 814, 154 866" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+
+        <!-- Labels for lines -->
+        <text x="164" y="156" fill="#94a3b8" font-size="8">HTTPS</text>
+        <text x="458" y="156" fill="#94a3b8" font-size="8">UI assets</text>
+        <text x="796" y="156" fill="#94a3b8" font-size="8">REST / SSE</text>
+        <text x="618" y="286" fill="#94a3b8" font-size="8">composition root</text>
+        <text x="930" y="830" fill="#fb923c" font-size="8">document indexing</text>
+        <text x="826" y="738" fill="#22d3ee" font-size="8">prompt sync</text>
+        <text x="1150" y="820" fill="#22d3ee" font-size="8">load prompts</text>
+        <text x="1332" y="802" fill="#fb7185" font-size="8">OTLP</text>
+        <text x="1012" y="870" fill="#fb7185" font-size="8">trace ingest</text>
+        <text x="984" y="936" fill="#94a3b8" font-size="8">Kibana reads traces</text>
+
+        <!-- Boundaries -->
+        <rect x="188" y="38" width="928" height="808" rx="12" fill="rgba(251, 191, 36, 0.04)" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="8,4" />
+        <text x="204" y="58" fill="#fbbf24" font-size="10" font-weight="700">SAA ADMIN PRODUCT</text>
+
+        <rect x="208" y="82" width="888" height="144" rx="10" fill="rgba(8, 51, 68, 0.08)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="224" y="102" fill="#22d3ee" font-size="9" font-weight="700">FRONTEND (React workspace · visual admin console)</text>
+
+        <rect x="208" y="260" width="888" height="566" rx="10" fill="rgba(6, 78, 59, 0.08)" stroke="#34d399" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="224" y="280" fill="#34d399" font-size="9" font-weight="700">BACKEND (Java 17 · Spring Boot 3.x · port 8080)</text>
+
+        <rect x="188" y="860" width="928" height="172" rx="12" fill="rgba(76, 29, 149, 0.05)" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="8,4" />
+        <text x="204" y="880" fill="#a78bfa" font-size="10" font-weight="700">MIDDLEWARE / DATA PLANE</text>
+
+        <rect x="1188" y="38" width="278" height="1006" rx="12" fill="rgba(30, 41, 59, 0.16)" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="8,4" />
+        <text x="1204" y="58" fill="#94a3b8" font-size="10" font-weight="700">EXTERNAL ECOSYSTEM</text>
+
+        <!-- External callers -->
+        <rect x="28" y="136" width="98" height="64" rx="6" fill="#0f172a" />
+        <rect x="28" y="136" width="98" height="64" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="77" y="158" fill="white" font-size="11" font-weight="700" text-anchor="middle">Users</text>
+        <text x="77" y="174" fill="#94a3b8" font-size="9" text-anchor="middle">browser</text>
+        <text x="77" y="188" fill="#64748b" font-size="8" text-anchor="middle">admin / builder</text>
+
+        <rect x="32" y="824" width="122" height="84" rx="6" fill="#0f172a" />
+        <rect x="32" y="824" width="122" height="84" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="93" y="848" fill="white" font-size="11" font-weight="700" text-anchor="middle">Generated apps</text>
+        <text x="93" y="864" fill="#94a3b8" font-size="9" text-anchor="middle">Spring AI projects</text>
+        <text x="93" y="878" fill="#64748b" font-size="8" text-anchor="middle">agent / workflow code</text>
+        <text x="93" y="892" fill="#64748b" font-size="8" text-anchor="middle">export target</text>
+
+        <!-- Frontend -->
+        <rect x="214" y="132" width="188" height="72" rx="6" fill="#0f172a" />
+        <rect x="214" y="132" width="188" height="72" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+        <text x="308" y="154" fill="white" font-size="11" font-weight="700" text-anchor="middle">packages/main</text>
+        <text x="308" y="171" fill="#94a3b8" font-size="9" text-anchor="middle">console shell + pages</text>
+        <text x="308" y="186" fill="#64748b" font-size="8" text-anchor="middle">prompt · dataset · eval · builder</text>
+
+        <rect x="538" y="132" width="198" height="72" rx="6" fill="#0f172a" />
+        <rect x="538" y="132" width="198" height="72" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+        <text x="637" y="154" fill="white" font-size="11" font-weight="700" text-anchor="middle">packages/spark-flow</text>
+        <text x="637" y="171" fill="#94a3b8" font-size="9" text-anchor="middle">visual workflow editor</text>
+        <text x="637" y="186" fill="#64748b" font-size="8" text-anchor="middle">nodes · canvas · graph state</text>
+
+        <rect x="866" y="132" width="190" height="72" rx="6" fill="#0f172a" />
+        <rect x="866" y="132" width="190" height="72" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+        <text x="961" y="154" fill="white" font-size="11" font-weight="700" text-anchor="middle">packages/spark-i18n</text>
+        <text x="961" y="171" fill="#94a3b8" font-size="9" text-anchor="middle">shared localization</text>
+        <text x="961" y="186" fill="#64748b" font-size="8" text-anchor="middle">language resources</text>
+
+        <!-- Backend: entry + APIs -->
+        <rect x="524" y="306" width="268" height="72" rx="6" fill="#0f172a" />
+        <rect x="524" y="306" width="268" height="72" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="658" y="328" fill="white" font-size="11" font-weight="700" text-anchor="middle">server-start</text>
+        <text x="658" y="345" fill="#94a3b8" font-size="9" text-anchor="middle">boot app · config · auth · composition</text>
+        <text x="658" y="360" fill="#64748b" font-size="8" text-anchor="middle">SaaStudioAdmin + runtime wiring</text>
+
+        <rect x="384" y="456" width="172" height="90" rx="6" fill="#0f172a" />
+        <rect x="384" y="456" width="172" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="470" y="479" fill="white" font-size="11" font-weight="700" text-anchor="middle">Evaluation APIs</text>
+        <text x="470" y="496" fill="#94a3b8" font-size="9" text-anchor="middle">prompt · dataset · evaluator</text>
+        <text x="470" y="511" fill="#94a3b8" font-size="9" text-anchor="middle">experiment · observability</text>
+        <text x="470" y="526" fill="#64748b" font-size="8" text-anchor="middle">admin/controller/*</text>
+
+        <rect x="576" y="456" width="172" height="90" rx="6" fill="#0f172a" />
+        <rect x="576" y="456" width="172" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="662" y="479" fill="white" font-size="11" font-weight="700" text-anchor="middle">Builder APIs</text>
+        <text x="662" y="496" fill="#94a3b8" font-size="9" text-anchor="middle">apps · tools · models</text>
+        <text x="662" y="511" fill="#94a3b8" font-size="9" text-anchor="middle">KB · MCP · workflow</text>
+        <text x="662" y="526" fill="#64748b" font-size="8" text-anchor="middle">builder/controller/*</text>
+
+        <rect x="768" y="456" width="172" height="90" rx="6" fill="#0f172a" />
+        <rect x="768" y="456" width="172" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="854" y="479" fill="white" font-size="11" font-weight="700" text-anchor="middle">Generator APIs</text>
+        <text x="854" y="496" fill="#94a3b8" font-size="9" text-anchor="middle">DSL import/export</text>
+        <text x="854" y="511" fill="#94a3b8" font-size="9" text-anchor="middle">codegen · project runner</text>
+        <text x="854" y="526" fill="#64748b" font-size="8" text-anchor="middle">builder/generator/*</text>
+
+        <rect x="960" y="456" width="172" height="90" rx="6" fill="#0f172a" />
+        <rect x="960" y="456" width="172" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="1046" y="479" fill="white" font-size="11" font-weight="700" text-anchor="middle">Chat OpenAPI</text>
+        <text x="1046" y="496" fill="#94a3b8" font-size="9" text-anchor="middle">external chat endpoint</text>
+        <text x="1046" y="511" fill="#94a3b8" font-size="9" text-anchor="middle">API-key interceptor</text>
+        <text x="1046" y="526" fill="#64748b" font-size="8" text-anchor="middle">server-openapi</text>
+
+        <!-- Backend: core -->
+        <rect x="350" y="618" width="212" height="90" rx="6" fill="#0f172a" />
+        <rect x="350" y="618" width="212" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="456" y="641" fill="white" font-size="11" font-weight="700" text-anchor="middle">Authoring services</text>
+        <text x="456" y="658" fill="#94a3b8" font-size="9" text-anchor="middle">accounts · apps · plugins</text>
+        <text x="456" y="673" fill="#94a3b8" font-size="9" text-anchor="middle">workspaces · tools · MCP</text>
+        <text x="456" y="688" fill="#64748b" font-size="8" text-anchor="middle">server-core/base</text>
+
+        <rect x="578" y="618" width="212" height="90" rx="6" fill="#0f172a" />
+        <rect x="578" y="618" width="212" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="684" y="641" fill="white" font-size="11" font-weight="700" text-anchor="middle">Agent + workflow runtime</text>
+        <text x="684" y="658" fill="#94a3b8" font-size="9" text-anchor="middle">executors · processors</text>
+        <text x="684" y="673" fill="#94a3b8" font-size="9" text-anchor="middle">tool callbacks · context</text>
+        <text x="684" y="688" fill="#64748b" font-size="8" text-anchor="middle">core/agent + workflow</text>
+
+        <rect x="806" y="618" width="212" height="90" rx="6" fill="#0f172a" />
+        <rect x="806" y="618" width="212" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="912" y="641" fill="white" font-size="11" font-weight="700" text-anchor="middle">RAG + knowledge</text>
+        <text x="912" y="658" fill="#94a3b8" font-size="9" text-anchor="middle">documents · chunking</text>
+        <text x="912" y="673" fill="#94a3b8" font-size="9" text-anchor="middle">vector store · retrieval</text>
+        <text x="912" y="688" fill="#64748b" font-size="8" text-anchor="middle">core/rag</text>
+
+        <rect x="1034" y="618" width="212" height="90" rx="6" fill="#0f172a" />
+        <rect x="1034" y="618" width="212" height="90" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+        <text x="1140" y="641" fill="white" font-size="11" font-weight="700" text-anchor="middle">Model bridge</text>
+        <text x="1140" y="658" fill="#94a3b8" font-size="9" text-anchor="middle">chat client factories</text>
+        <text x="1140" y="673" fill="#94a3b8" font-size="9" text-anchor="middle">OpenAI · DashScope · DeepSeek</text>
+        <text x="1140" y="688" fill="#64748b" font-size="8" text-anchor="middle">admin/service/client</text>
+
+        <rect x="492" y="772" width="312" height="54" rx="6" fill="#0f172a" />
+        <rect x="492" y="772" width="312" height="54" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="648" y="794" fill="white" font-size="11" font-weight="700" text-anchor="middle">server-runtime</text>
+        <text x="648" y="810" fill="#94a3b8" font-size="9" text-anchor="middle">shared DTOs · enums · contracts across app / model / workflow domains</text>
+
+        <!-- Middleware / data plane -->
+        <rect x="226" y="882" width="176" height="98" rx="6" fill="#0f172a" />
+        <rect x="226" y="882" width="176" height="98" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+        <text x="314" y="905" fill="white" font-size="11" font-weight="700" text-anchor="middle">MySQL</text>
+        <text x="314" y="922" fill="#94a3b8" font-size="9" text-anchor="middle">admin schema</text>
+        <text x="314" y="937" fill="#94a3b8" font-size="9" text-anchor="middle">agentscope schema</text>
+        <text x="314" y="952" fill="#64748b" font-size="8" text-anchor="middle">prompt · eval · app metadata</text>
+
+        <rect x="430" y="882" width="132" height="74" rx="6" fill="#0f172a" />
+        <rect x="430" y="882" width="132" height="74" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+        <text x="496" y="905" fill="white" font-size="11" font-weight="700" text-anchor="middle">Redis</text>
+        <text x="496" y="922" fill="#94a3b8" font-size="9" text-anchor="middle">cache + context</text>
+        <text x="496" y="937" fill="#64748b" font-size="8" text-anchor="middle">workflow state</text>
+
+        <rect x="590" y="882" width="214" height="98" rx="6" fill="#0f172a" />
+        <rect x="590" y="882" width="214" height="98" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+        <text x="697" y="905" fill="white" font-size="11" font-weight="700" text-anchor="middle">Elasticsearch</text>
+        <text x="697" y="922" fill="#94a3b8" font-size="9" text-anchor="middle">loongsuite_traces</text>
+        <text x="697" y="937" fill="#94a3b8" font-size="9" text-anchor="middle">vector store / retrieval</text>
+        <text x="697" y="952" fill="#64748b" font-size="8" text-anchor="middle">search + observability</text>
+
+        <rect x="826" y="882" width="144" height="54" rx="4" fill="rgba(251, 146, 60, 0.3)" stroke="#fb923c" stroke-width="1.2" />
+        <text x="898" y="903" fill="white" font-size="11" font-weight="700" text-anchor="middle">RocketMQ</text>
+        <text x="898" y="919" fill="#fb923c" font-size="8" text-anchor="middle">document-index topic</text>
+
+        <rect x="998" y="882" width="144" height="74" rx="6" fill="#0f172a" />
+        <rect x="998" y="882" width="144" height="74" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5" />
+        <text x="1070" y="905" fill="white" font-size="11" font-weight="700" text-anchor="middle">Nacos</text>
+        <text x="1070" y="922" fill="#94a3b8" font-size="9" text-anchor="middle">prompt config</text>
+        <text x="1070" y="937" fill="#64748b" font-size="8" text-anchor="middle">dynamic distribution</text>
+
+        <!-- External ecosystem -->
+        <rect x="1206" y="270" width="234" height="84" rx="6" fill="#0f172a" />
+        <rect x="1206" y="270" width="234" height="84" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="1323" y="293" fill="white" font-size="11" font-weight="700" text-anchor="middle">MCP servers / tools</text>
+        <text x="1323" y="310" fill="#94a3b8" font-size="9" text-anchor="middle">tool discovery + calls</text>
+        <text x="1323" y="326" fill="#64748b" font-size="8" text-anchor="middle">plugin / tool callbacks</text>
+
+        <rect x="1206" y="408" width="234" height="84" rx="6" fill="#0f172a" />
+        <rect x="1206" y="408" width="234" height="84" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="1323" y="431" fill="white" font-size="11" font-weight="700" text-anchor="middle">OSS / file storage</text>
+        <text x="1323" y="448" fill="#94a3b8" font-size="9" text-anchor="middle">uploaded documents</text>
+        <text x="1323" y="464" fill="#64748b" font-size="8" text-anchor="middle">knowledge ingestion</text>
+
+        <rect x="1206" y="546" width="234" height="84" rx="6" fill="#0f172a" />
+        <rect x="1206" y="546" width="234" height="84" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="1323" y="569" fill="white" font-size="11" font-weight="700" text-anchor="middle">Model providers</text>
+        <text x="1323" y="586" fill="#94a3b8" font-size="9" text-anchor="middle">OpenAI · DashScope · DeepSeek</text>
+        <text x="1323" y="602" fill="#64748b" font-size="8" text-anchor="middle">chat + embedding inference</text>
+
+        <rect x="1206" y="690" width="234" height="90" rx="6" fill="#0f172a" />
+        <rect x="1206" y="690" width="234" height="90" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="1323" y="713" fill="white" font-size="11" font-weight="700" text-anchor="middle">Connected agent apps</text>
+        <text x="1323" y="730" fill="#94a3b8" font-size="9" text-anchor="middle">load prompts from Nacos</text>
+        <text x="1323" y="745" fill="#94a3b8" font-size="9" text-anchor="middle">emit OTLP traces</text>
+        <text x="1323" y="760" fill="#64748b" font-size="8" text-anchor="middle">spring.ai.alibaba.agent.proxy</text>
+
+        <rect x="1206" y="812" width="234" height="72" rx="6" fill="#0f172a" />
+        <rect x="1206" y="812" width="234" height="72" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5" />
+        <text x="1323" y="835" fill="white" font-size="11" font-weight="700" text-anchor="middle">LoongCollector</text>
+        <text x="1323" y="852" fill="#94a3b8" font-size="9" text-anchor="middle">OTLP receiver · trace pipeline</text>
+        <text x="1323" y="868" fill="#64748b" font-size="8" text-anchor="middle">feeds Elasticsearch</text>
+
+        <rect x="1206" y="900" width="234" height="72" rx="6" fill="#0f172a" />
+        <rect x="1206" y="900" width="234" height="72" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5" />
+        <text x="1323" y="923" fill="white" font-size="11" font-weight="700" text-anchor="middle">Kibana</text>
+        <text x="1323" y="940" fill="#94a3b8" font-size="9" text-anchor="middle">trace inspection</text>
+        <text x="1323" y="956" fill="#64748b" font-size="8" text-anchor="middle">ops-side visibility</text>
+
+        <!-- Supporting callouts -->
+        <rect x="248" y="742" width="194" height="74" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.2" />
+        <text x="345" y="765" fill="white" font-size="10" font-weight="700" text-anchor="middle">Security surface</text>
+        <text x="345" y="782" fill="#94a3b8" font-size="8" text-anchor="middle">auth controllers · API keys</text>
+        <text x="345" y="796" fill="#94a3b8" font-size="8" text-anchor="middle">JWT / OAuth2 / interceptors</text>
+
+        <rect x="842" y="742" width="226" height="74" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.2" />
+        <text x="955" y="765" fill="white" font-size="10" font-weight="700" text-anchor="middle">Generated project path</text>
+        <text x="955" y="782" fill="#94a3b8" font-size="8" text-anchor="middle">DSL adapters → project generator</text>
+        <text x="955" y="796" fill="#94a3b8" font-size="8" text-anchor="middle">agent / workflow scaffolds</text>
+
+        <!-- Legend outside all boundaries -->
+        <rect x="188" y="1070" width="1278" height="100" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.2" />
+        <text x="214" y="1094" fill="white" font-size="11" font-weight="700">Legend</text>
+        <line x1="214" y1="1118" x2="274" y2="1118" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowhead)" />
+        <text x="288" y="1122" fill="#94a3b8" font-size="9">synchronous request / dependency</text>
+        <line x1="494" y1="1118" x2="554" y2="1118" stroke="#fb923c" stroke-width="2.2" marker-end="url(#event-arrowhead)" />
+        <text x="568" y="1122" fill="#94a3b8" font-size="9">asynchronous event flow</text>
+        <line x1="754" y1="1118" x2="814" y2="1118" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#config-arrowhead)" />
+        <text x="828" y="1122" fill="#94a3b8" font-size="9">prompt / config propagation</text>
+        <line x1="1066" y1="1118" x2="1126" y2="1118" stroke="#fb7185" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#trace-arrowhead)" />
+        <text x="1140" y="1122" fill="#94a3b8" font-size="9">observability trace flow</text>
+        <text x="214" y="1148" fill="#64748b" font-size="8">Reading order: users → frontend → API surfaces → core runtime → middleware / integrations. Grouped by responsibility, not package exhaustiveness.</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>What the admin product owns</h3>
+        </div>
+        <ul>
+          <li>• Visual console, workflow editor, localization assets</li>
+          <li>• Prompt, dataset, evaluator, experiment, observability APIs</li>
+          <li>• Builder, DSL conversion, code generation, and chat OpenAPI</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>How work executes</h3>
+        </div>
+        <ul>
+          <li>• server-start composes API surfaces and runtime services</li>
+          <li>• server-core hosts authoring, agent/workflow, RAG, and model logic</li>
+          <li>• server-runtime carries shared domain contracts across the stack</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Repo evidence used</h3>
+        </div>
+        <ul>
+          <li>• Aggregate + child POMs, controller/service trees, runtime packages</li>
+          <li>• application.yml, Docker Compose, Kubernetes manifests</li>
+          <li>• MySQL schemas, tracing pipeline config, Nacos + RocketMQ flows</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">Generated from the current repository structure under spring-ai-alibaba-admin/ plus deployment and schema configuration files</div>
+  </div>
+
+  <script>
+    function captureOptions() {
+      const report = document.getElementById('report-container');
+      const rect = report.getBoundingClientRect();
+      return {
+        x: Math.max(rect.left - 32, 0),
+        y: Math.max(rect.top - 32, 0),
+        width: rect.width + 64,
+        height: rect.height + 64,
+        scale: 2,
+        backgroundColor: '#020617',
+        useCORS: true,
+        ignoreElements: (element) => element.classList && element.classList.contains('toolbar')
+      };
+    }
+
+    async function renderCanvas() {
+      return html2canvas(document.body, captureOptions());
+    }
+
+    async function copyAsImage(button) {
+      const originalText = button.textContent;
+      try {
+        const canvas = await renderCanvas();
+        canvas.toBlob(async (blob) => {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          button.textContent = '✓ Copied';
+          setTimeout(() => button.textContent = originalText, 1800);
+        }, 'image/png');
+      } catch (error) {
+        button.textContent = 'Copy failed';
+        setTimeout(() => button.textContent = originalText, 1800);
+      }
+    }
+
+    async function downloadPNG(button) {
+      const originalText = button.textContent;
+      const canvas = await renderCanvas();
+      const link = document.createElement('a');
+      link.download = 'spring-ai-alibaba-admin-architecture.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      button.textContent = '✓ Saved';
+      setTimeout(() => button.textContent = originalText, 1800);
+    }
+
+    async function downloadPDF(button) {
+      const originalText = button.textContent;
+      const canvas = await renderCanvas();
+      const image = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(image, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('spring-ai-alibaba-admin-architecture.pdf');
+      button.textContent = '✓ Saved';
+      setTimeout(() => button.textContent = originalText, 1800);
+    }
+  </script>
+</body>
+</html>

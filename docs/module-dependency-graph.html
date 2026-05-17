@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring AI Alibaba Module Dependency Graph</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 980px;
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+
+    .card h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .card ul {
+      list-style: none;
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .card li {
+      margin-bottom: 0.375rem;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .toolbar-toggle {
+      background: transparent;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .toolbar-toggle:hover {
+      color: #94a3b8;
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .toolbar-actions {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .toolbar.expanded .toolbar-actions {
+      display: flex;
+    }
+
+    .toolbar-actions button {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .toolbar-actions button:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: white;
+      border-color: #475569;
+    }
+
+    @media print {
+      body { background: #020617; padding: 1rem; }
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Spring AI Alibaba Module Dependency Graph</h1>
+        <div class="toolbar">
+          <div class="toolbar-actions">
+            <button onclick="copyAsImage(this)">📋 Copy</button>
+            <button onclick="downloadPNG(this)">🖼️ PNG</button>
+            <button onclick="downloadPDF(this)">📄 PDF</button>
+          </div>
+          <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+        </div>
+      </div>
+      <p class="subtitle">Direct internal dependencies declared by the root reactor modules in <code>pom.xml</code>; external libraries omitted.</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1120 780" role="img" aria-label="Spring AI Alibaba root module dependency graph">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="cycle-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Cluster boundaries -->
+        <rect x="28" y="34" width="1064" height="608" rx="12" fill="rgba(251, 191, 36, 0.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="44" y="56" fill="#fbbf24" font-size="11" font-weight="600">Root reactor modules from /pom.xml</text>
+
+        <rect x="56" y="86" width="320" height="248" rx="12" fill="rgba(34, 211, 238, 0.03)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="72" y="108" fill="#22d3ee" font-size="10" font-weight="600">Product-facing modules</text>
+
+        <rect x="404" y="86" width="452" height="344" rx="12" fill="rgba(52, 211, 153, 0.03)" stroke="#34d399" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="420" y="108" fill="#34d399" font-size="10" font-weight="600">Spring Boot starters</text>
+
+        <rect x="884" y="86" width="180" height="150" rx="12" fill="rgba(167, 139, 250, 0.03)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="900" y="108" fill="#a78bfa" font-size="10" font-weight="600">Build metadata</text>
+
+        <rect x="254" y="388" width="470" height="222" rx="12" fill="rgba(6, 78, 59, 0.08)" stroke="#34d399" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="270" y="410" fill="#34d399" font-size="10" font-weight="600">Shared runtime foundation</text>
+
+        <!-- Dependency edges: dependent -> dependency -->
+        <path d="M 173 192 C 198 262, 294 332, 430 450" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 173 288 C 228 356, 314 394, 430 450" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 173 288 C 244 402, 334 496, 430 548" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 502 192 C 506 286, 490 356, 430 450" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 702 192 C 666 282, 580 352, 430 450" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 502 288 C 496 354, 470 400, 430 450" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 702 288 C 650 392, 560 488, 430 548" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 602 384 C 570 430, 520 500, 430 548" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <path d="M 430 500 L 430 546" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+
+        <!-- Product-facing nodes -->
+        <rect x="78" y="132" width="190" height="60" rx="6" fill="#0f172a"/>
+        <rect x="78" y="132" width="190" height="60" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="173" y="154" fill="white" font-size="11" font-weight="600" text-anchor="middle">Studio</text>
+        <text x="173" y="171" fill="#94a3b8" font-size="8" text-anchor="middle">spring-ai-alibaba-studio</text>
+        <text x="173" y="184" fill="#22d3ee" font-size="7" text-anchor="middle">depends on agent-framework</text>
+
+        <rect x="78" y="228" width="190" height="60" rx="6" fill="#0f172a"/>
+        <rect x="78" y="228" width="190" height="60" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="173" y="250" fill="white" font-size="11" font-weight="600" text-anchor="middle">Sandbox</text>
+        <text x="173" y="267" fill="#94a3b8" font-size="8" text-anchor="middle">spring-ai-alibaba-sandbox</text>
+        <text x="173" y="280" fill="#22d3ee" font-size="7" text-anchor="middle">depends on framework + core</text>
+
+        <!-- Starter nodes -->
+        <rect x="424" y="132" width="156" height="60" rx="6" fill="#0f172a"/>
+        <rect x="424" y="132" width="156" height="60" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="502" y="154" fill="white" font-size="11" font-weight="600" text-anchor="middle">A2A Nacos</text>
+        <text x="502" y="171" fill="#94a3b8" font-size="8" text-anchor="middle">starter-a2a-nacos</text>
+        <text x="502" y="184" fill="#34d399" font-size="7" text-anchor="middle">→ agent-framework</text>
+
+        <rect x="624" y="132" width="156" height="60" rx="6" fill="#0f172a"/>
+        <rect x="624" y="132" width="156" height="60" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="702" y="154" fill="white" font-size="11" font-weight="600" text-anchor="middle">Config Nacos</text>
+        <text x="702" y="171" fill="#94a3b8" font-size="8" text-anchor="middle">starter-config-nacos</text>
+        <text x="702" y="184" fill="#34d399" font-size="7" text-anchor="middle">→ agent-framework</text>
+
+        <rect x="424" y="228" width="156" height="60" rx="6" fill="#0f172a"/>
+        <rect x="424" y="228" width="156" height="60" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="502" y="250" fill="white" font-size="11" font-weight="600" text-anchor="middle">AgentScope</text>
+        <text x="502" y="267" fill="#94a3b8" font-size="8" text-anchor="middle">starter-agentscope</text>
+        <text x="502" y="280" fill="#34d399" font-size="7" text-anchor="middle">→ agent-framework</text>
+
+        <rect x="624" y="228" width="156" height="60" rx="6" fill="#0f172a"/>
+        <rect x="624" y="228" width="156" height="60" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="702" y="250" fill="white" font-size="11" font-weight="600" text-anchor="middle">Built-in Nodes</text>
+        <text x="702" y="267" fill="#94a3b8" font-size="8" text-anchor="middle">starter-builtin-nodes</text>
+        <text x="702" y="280" fill="#34d399" font-size="7" text-anchor="middle">→ graph-core</text>
+
+        <rect x="524" y="324" width="156" height="60" rx="6" fill="#0f172a"/>
+        <rect x="524" y="324" width="156" height="60" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="602" y="346" fill="white" font-size="11" font-weight="600" text-anchor="middle">Graph Observe</text>
+        <text x="602" y="363" fill="#94a3b8" font-size="8" text-anchor="middle">starter-graph-observation</text>
+        <text x="602" y="376" fill="#34d399" font-size="7" text-anchor="middle">→ graph-core</text>
+
+        <!-- Build metadata node -->
+        <rect x="898" y="132" width="152" height="60" rx="6" fill="#0f172a"/>
+        <rect x="898" y="132" width="152" height="60" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="974" y="154" fill="white" font-size="11" font-weight="600" text-anchor="middle">BOM</text>
+        <text x="974" y="171" fill="#94a3b8" font-size="8" text-anchor="middle">spring-ai-alibaba-bom</text>
+        <text x="974" y="184" fill="#a78bfa" font-size="7" text-anchor="middle">no direct internal runtime edge</text>
+
+        <!-- Foundation nodes -->
+        <rect x="330" y="440" width="200" height="60" rx="6" fill="#0f172a"/>
+        <rect x="330" y="440" width="200" height="60" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="430" y="462" fill="white" font-size="11" font-weight="600" text-anchor="middle">Agent Framework</text>
+        <text x="430" y="479" fill="#94a3b8" font-size="8" text-anchor="middle">spring-ai-alibaba-agent-framework</text>
+        <text x="430" y="492" fill="#34d399" font-size="7" text-anchor="middle">depends on graph-core</text>
+
+        <rect x="330" y="548" width="200" height="60" rx="6" fill="#0f172a"/>
+        <rect x="330" y="548" width="200" height="60" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="430" y="570" fill="white" font-size="11" font-weight="600" text-anchor="middle">Graph Core</text>
+        <text x="430" y="587" fill="#94a3b8" font-size="8" text-anchor="middle">spring-ai-alibaba-graph-core</text>
+        <text x="430" y="600" fill="#a78bfa" font-size="7" text-anchor="middle">lowest shared dependency layer</text>
+
+        <!-- Legend outside all boundaries -->
+        <text x="44" y="682" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="44" y="698" width="18" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="70" y="707" fill="#94a3b8" font-size="8">Product-facing module</text>
+        <rect x="232" y="698" width="18" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="258" y="707" fill="#94a3b8" font-size="8">Starter / runtime module</text>
+        <rect x="432" y="698" width="18" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="458" y="707" fill="#94a3b8" font-size="8">Foundation / metadata</text>
+        <line x1="646" y1="703" x2="682" y2="703" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+        <text x="692" y="707" fill="#94a3b8" font-size="8">Direct dependency</text>
+        <line x1="836" y1="703" x2="872" y2="703" stroke="#ef4444" stroke-width="2" marker-end="url(#cycle-arrowhead)"/>
+        <text x="882" y="707" fill="#94a3b8" font-size="8">循环依赖 edge (none detected)</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Scope</h3>
+        </div>
+        <ul>
+          <li>• 10 modules listed in the root reactor</li>
+          <li>• Direct dependencies only</li>
+          <li>• External libraries omitted</li>
+          <li>• Examples and separate admin reactor excluded</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Dependency shape</h3>
+        </div>
+        <ul>
+          <li>• 9 internal dependency edges</li>
+          <li>• agent-framework receives 5 dependents</li>
+          <li>• graph-core receives 4 dependents</li>
+          <li>• bom is isolated at runtime</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>Cycle check</h3>
+        </div>
+        <ul>
+          <li>• 0 circular dependencies detected</li>
+          <li>• Red is reserved for cycle edges</li>
+          <li>• Current graph is acyclic</li>
+          <li>• Source checked on 2026-05-15</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">
+      Spring AI Alibaba • generated from root pom.xml and child module pom.xml files • 2026-05-15
+    </p>
+  </div>
+
+  <script>
+    async function copyAsImage(btn) {
+      const orig = btn.textContent;
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ Copied!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+
+    async function downloadPNG(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const link = document.createElement('a');
+        link.download = 'module-dependency-graph.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '✓ Done!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+
+    async function downloadPDF(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const el = document.getElementById('report-container');
+        const r = el.getBoundingClientRect();
+        const pad = 32;
+        const canvas = await html2canvas(document.body, { backgroundColor: '#020617', scale: 2, useCORS: true, ignoreElements: (e) => e.classList && e.classList.contains('toolbar'), x: r.left + window.scrollX - pad, y: r.top + window.scrollY - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('module-dependency-graph.pdf');
+        btn.textContent = '✓ Done!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+  </script>
+</body>
+</html>
