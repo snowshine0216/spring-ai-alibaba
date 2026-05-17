@@ -58,6 +58,10 @@ run_test() {
 
 # ---- Tests are appended below this line in subsequent tasks ----
 
+run_test "non-commit command exits 0" \
+    '{"tool_input":{"command":"ls -la"}}' \
+    0
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
