@@ -94,6 +94,16 @@ run_test "staged README does not block" \
     '{"tool_input":{"command":"git commit -m wip"}}' \
     0
 
+export SETUP='
+mkdir -p spring-ai-alibaba-admin-server-start/src/main/java/com/x/controller
+echo "// stub" > spring-ai-alibaba-admin-server-start/src/main/java/com/x/controller/FooController.java
+git add spring-ai-alibaba-admin-server-start/src/main/java/com/x/controller/FooController.java
+'
+run_test "gh pr create with stale source also blocks" \
+    '{"tool_input":{"command":"gh pr create --title t --body b"}}' \
+    2 \
+    "docs/api-list.md"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
