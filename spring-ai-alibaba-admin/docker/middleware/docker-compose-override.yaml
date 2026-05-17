@@ -1,0 +1,23 @@
+# Local dev override for macOS (Colima) — two fixes:
+# 1. Removes the UID/GID user constraint on RocketMQ containers (macOS UID 501
+#    can't execute the container's runbroker.sh / mqnamesrv scripts).
+# 2. Reduces Elasticsearch heap to 512MB so it fits in a 4-6 GB Colima VM.
+services:
+  rmq_namesrv:
+    user: ""
+  rmq_broker:
+    user: ""
+  rmq_proxy:
+    user: ""
+  elasticsearch:
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=es-cluster
+      - node.name=es-node-1
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - 'http.cors.allow-origin="*"'
+      - action.destructive_requires_name=false
