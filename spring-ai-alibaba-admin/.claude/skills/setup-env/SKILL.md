@@ -20,8 +20,9 @@ Run this first — it tells you what's missing before touching anything:
 
 | | Dep | Notes |
 |---|---|---|
-| Build | Java 17 | `/opt/homebrew/opt/openjdk@17` (keg-only) |
-| Build | Maven 3.9+ | Uses Java 17 via `JAVA_HOME` |
+| Build | jenv | Per-directory JDK manager (Homebrew `jenv` formula); avoids editing your shell rc |
+| Build | Java 17 | `openjdk@17` (keg-only); registered with jenv, pinned via project `.java-version` |
+| Build | Maven 3.9+ | Resolves Java via `JAVA_HOME` (set from `jenv prefix 17` at script start) |
 | Node | NVM + Node | Script sources `~/.nvm/nvm.sh`; pin version with `frontend/.nvmrc` |
 | Docker | Colima (VM) | Docker Desktop download is blocked from CN — use Colima instead |
 | Docker | Docker CLI | Homebrew `docker` formula |
@@ -35,12 +36,19 @@ Run this first — it tells you what's missing before touching anything:
 
 ```bash
 .claude/skills/setup-env/scripts/install-deps.sh
-source ~/.zshrc   # pick up Java 17 PATH change
 ```
 
-What it does: installs Java 17, Maven, Colima, Docker CLI, docker-compose
-plugin, and writes `docker/middleware/docker-compose-override.yaml` with two
-macOS fixes (RocketMQ user permissions + Elasticsearch heap reduction).
+What it does: installs jenv, Java 17 (`openjdk@17`), Maven, Colima, Docker
+CLI, the docker-compose plugin, and writes
+`docker/middleware/docker-compose-override.yaml` with two macOS fixes
+(RocketMQ user permissions + Elasticsearch heap reduction). It also registers
+`openjdk@17` with jenv and runs `jenv local 17` at the project root, which
+writes a `.java-version` file pinning this tree to JDK 17. **The script does
+not modify `~/.zshrc`** — every JDK switch is local to the project directory.
+
+If jenv is freshly installed and not yet on PATH, run `eval "$(jenv init -)"`
+or open a new terminal (which will pick up jenv via the standard Homebrew
+shell init).
 
 ---
 
@@ -105,7 +113,7 @@ Open a dedicated terminal and run from the project root:
 ```
 
 - Sources `.env` to inject the API key into the process.
-- Sets `JAVA_HOME` to Java 17 automatically.
+- Resolves `JAVA_HOME` from `jenv prefix 17` (no shell-rc mutation).
 - First run downloads Maven deps (~500 MB).
 - Ready when logs show `Started SaaStudioAdmin`.
 
@@ -183,7 +191,9 @@ colima start
 
 | Symptom | Fix |
 |---|---|
-| `command not found: java` | `source ~/.zshrc` or open a new terminal |
+| `command not found: java` | jenv shims not on PATH — `eval "$(jenv init -)"`, then open a new terminal (or `source ~/.zshrc` if your rc already has the jenv init line) |
+| `command not found: jenv` | Run `install-deps.sh` (installs jenv via Homebrew) |
+| `Unsupported class file major version` / Maven uses wrong JDK | Confirm `.java-version` exists at the admin root and `jenv prefix 17` resolves — then re-run; scripts always set `JAVA_HOME` from jenv |
 | `docker compose: unknown command` | Run `install-deps.sh` — it links the compose plugin |
 | Docker pull timeout | Colima mirrors not active — `colima stop && colima start` |
 | RocketMQ `Permission denied runbroker.sh` | Started without the override file — use `start-middleware.sh` |
