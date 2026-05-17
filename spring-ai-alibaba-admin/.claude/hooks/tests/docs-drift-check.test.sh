@@ -86,6 +86,14 @@ run_test "staged SQL blocks with data-model.md in stderr" \
     2 \
     "docs/data-model.md"
 
+export SETUP='
+echo "README" > README.md
+git add README.md
+'
+run_test "staged README does not block" \
+    '{"tool_input":{"command":"git commit -m wip"}}' \
+    0
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
