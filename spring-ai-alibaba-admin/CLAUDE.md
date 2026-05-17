@@ -35,7 +35,10 @@ There is no aggregate test target — tests live only in `spring-ai-alibaba-admi
 
 ### Frontend (monorepo at `frontend/`, Umi 4 + React)
 
+**Node 16 is required.** Umi 4's transitive dep `http-deceiver` (via `spdy`, registered by `@umijs/preset-umi/features/esmi`) calls `process.binding('http_parser')` — an internal Node API removed in Node 17+. `umi dev` aborts on startup under Node 18/20/22/24 with `No such module: http_parser`. The repo pins this via `frontend/.nvmrc` (currently `16`); `start-frontend.sh` honors it, and the Makefile's `frontend-start` target should be invoked from a shell with NVM loaded.
+
 ```bash
+cd frontend && nvm use                          # picks Node 16 from frontend/.nvmrc
 cd frontend && npm install --ignore-scripts    # NEVER run plain `npm install` — husky postinstall fails
 cd frontend/packages/spark-flow && npm run build   # Must build BEFORE starting main (it is a workspace dep)
 cd frontend/packages/main && npm run dev           # Dev server on :8000 (proxies to backend :8080)
@@ -139,6 +142,9 @@ MySQL (mandatory), Redis (sessions / caches), Elasticsearch (vector store + Kiba
 - [spring-ai-alibaba-admin-server-start/CONFIGURATION.md](spring-ai-alibaba-admin-server-start/CONFIGURATION.md) — env-var matrix for prod/k8s deployments
 - Parent project guide: [../CLAUDE.md](../CLAUDE.md) — broader Spring AI Alibaba context
 
+## Project Skills
+
+- **docs-auto-sync** (`.claude/skills/docs-auto-sync/`) — keeps code-derived docs in `docs/` in sync with the source. Triggered automatically by a PreToolUse hook on `git commit` and `gh pr create`. Manually invokable via `/docs-auto-sync`. Requires `jq` on PATH (fails open if missing).
 
 ## Forbidden Areas
 - `external_key` field in s`erver-core/PromptEntity`: A specific SDK client relies on this field as a cache key. Deleting or renaming it will cause the SDK to throw immediate errors. Do not refactor.

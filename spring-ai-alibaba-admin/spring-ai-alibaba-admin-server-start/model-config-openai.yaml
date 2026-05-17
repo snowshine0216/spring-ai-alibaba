@@ -3,7 +3,7 @@ models:
     name: openai-gpt4o
     provider: openai
     modelName: gpt-4o
-    baseUrl: https://api.openai.com/v1
+    baseUrl: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     apiKey: ${OPENAI_API_KEY}
     status: 1
     defaultParameters:
