@@ -76,6 +76,16 @@ run_test "staged controller blocks with api-list.md in stderr" \
     2 \
     "docs/api-list.md"
 
+export SETUP='
+mkdir -p docker/middleware/init/mysql
+echo "CREATE TABLE foo (id BIGINT);" > docker/middleware/init/mysql/admin-schema.sql
+git add docker/middleware/init/mysql/admin-schema.sql
+'
+run_test "staged SQL blocks with data-model.md in stderr" \
+    '{"tool_input":{"command":"git commit -m wip"}}' \
+    2 \
+    "docs/data-model.md"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
