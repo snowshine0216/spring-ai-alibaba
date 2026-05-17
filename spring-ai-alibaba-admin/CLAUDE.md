@@ -139,6 +139,9 @@ MySQL (mandatory), Redis (sessions / caches), Elasticsearch (vector store + Kiba
 - [spring-ai-alibaba-admin-server-start/CONFIGURATION.md](spring-ai-alibaba-admin-server-start/CONFIGURATION.md) — env-var matrix for prod/k8s deployments
 - Parent project guide: [../CLAUDE.md](../CLAUDE.md) — broader Spring AI Alibaba context
 
+## Project Skills
+
+- **docs-auto-sync** (`.claude/skills/docs-auto-sync/`) — keeps code-derived docs in `docs/` in sync with the source. Triggered automatically by a PreToolUse hook on `git commit` and `gh pr create`. Manually invokable via `/docs-auto-sync`. Requires `jq` on PATH (fails open if missing).
 
 ## Forbidden Areas
 - `external_key` field in s`erver-core/PromptEntity`: A specific SDK client relies on this field as a cache key. Deleting or renaming it will cause the SDK to throw immediate errors. Do not refactor.
