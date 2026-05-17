@@ -104,6 +104,10 @@ run_test "gh pr create with stale source also blocks" \
     2 \
     "docs/api-list.md"
 
+HOOK_PATH="$(mktemp -d):$PATH" run_test "jq missing → fail open" \
+    '{"tool_input":{"command":"git commit -m wip"}}' \
+    0
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" = "0" ]
