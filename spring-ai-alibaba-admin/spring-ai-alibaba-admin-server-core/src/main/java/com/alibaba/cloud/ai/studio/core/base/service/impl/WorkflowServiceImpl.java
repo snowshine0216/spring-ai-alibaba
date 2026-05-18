@@ -103,8 +103,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 		List<WorkflowResponse> allResponses = streamCall(Flux.just(request)).collectList().block();
 
 		Optional<WorkflowResponse> any = allResponses.stream()
-			.filter(workflowResponse -> workflowResponse.getStatus().equals(WorkflowStatus.FAILED)
-					|| workflowResponse.getStatus().equals(WorkflowStatus.PAUSE))
+			.filter(workflowResponse -> workflowResponse.getStatus() != null
+					&& (workflowResponse.getStatus().equals(WorkflowStatus.FAILED)
+							|| workflowResponse.getStatus().equals(WorkflowStatus.PAUSE)))
 			.findAny();
 		if (any.isPresent()) {
 			return any.get();
